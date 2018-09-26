@@ -73,38 +73,38 @@ bot.dialog('HelpDialog',
     matches: 'Help'
 })
 
-bot.dialog('SearchForVacum',
+bot.dialog('SearchForVacuum',
     (session) => {
-        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
         session.endDialog();
     }
 ).triggerAction({
     matches: 'SearchForVacum'
 })
 
-bot.dialog('MaterialToVacum',
+bot.dialog('MaterialToVacuum',
     (session) => {
-        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
         session.endDialog();
     }
 ).triggerAction({
     matches: 'MaterialToVacum'
 })
 
-bot.dialog('DetailsToVacum',
+bot.dialog('DetailsToVacuum',
     (session) => {
-        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the DetailsToVacuum intent. You said \'%s\'.', session.message.text);
         session.endDialog();
     }
 ).triggerAction({
-    matches: 'DetailsToVacum'
+    matches: 'DetailsToVacuum'
 })
 
-bot.dialog('AccessoryToVacum',
+bot.dialog('AccessoryToVacuum',
     (session) => {
-        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the AccessoryToVacuum intent. You said \'%s\'.', session.message.text);
         session.endDialog();
     }
 ).triggerAction({
-    matches: 'AccessoryToVacum'
+    matches: 'AccessoryToVacuum'
 })

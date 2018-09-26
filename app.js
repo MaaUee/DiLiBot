@@ -5,6 +5,7 @@ A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework.
 var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
+require('dotenv-extended').load();
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -72,12 +73,38 @@ bot.dialog('HelpDialog',
     matches: 'Help'
 })
 
-bot.dialog('CancelDialog',
+bot.dialog('SearchForVacum',
     (session) => {
         session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
         session.endDialog();
     }
 ).triggerAction({
-    matches: 'Cancel'
+    matches: 'SearchForVacum'
 })
 
+bot.dialog('MaterialToVacum',
+    (session) => {
+        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.endDialog();
+    }
+).triggerAction({
+    matches: 'MaterialToVacum'
+})
+
+bot.dialog('DetailsToVacum',
+    (session) => {
+        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.endDialog();
+    }
+).triggerAction({
+    matches: 'DetailsToVacum'
+})
+
+bot.dialog('AccessoryToVacum',
+    (session) => {
+        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.endDialog();
+    }
+).triggerAction({
+    matches: 'AccessoryToVacum'
+})

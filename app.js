@@ -6,6 +6,7 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var cognitiveservices = require('botbuilder-cognitiveservices');
+var nodemailer = require('nodemailer');
 require('dotenv-extended').load();
 
 // Setup Restify Server
@@ -29,15 +30,14 @@ var connector = new builder.ChatConnector({
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-//var tableName = 'botdata';
-//var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-//var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-
+/* var tableName = 'botdata';
+var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+ */
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
-
 bot.set('storage', new builder.MemoryBotStorage());         // Register in-memory state storage
 server.post('/api/messages', connector.listen());
 
@@ -48,7 +48,7 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-bot.set('storage', inMemoryStorage);
+/* bot.set('storage', tableStorage); */
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
@@ -56,7 +56,7 @@ var luisAPIKey = process.env.LuisAPIKey;
 var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.microsoft.com';
 
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + '87dcb46e-14e5-438a-be34-a9e321a1cd0b' + '?subscription-key=' + 'cb6e1cb4eb494a55b7933066b5cd71a0';
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -93,11 +93,6 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-/* dusts.json
-** ask for {dustclass} (Model /T-Nr)
-** search for {dust}s like {entity}
-** ask user for confirmation
-*/
 bot.dialog('MaterialToVacuum',[
     (session, args, next) => {
 
@@ -150,6 +145,41 @@ bot.dialog('AccessoryToVacuum',
     matches: 'AccessoryToVacuum'
 })
 
+bot.dialog('None', [
+    (session) => {
+        session.conversationData.question = session.message.text;
+        builder.Prompts.text(session, 'I am sorry, unfortunately I cannot answer your question. I will inform an employee to answer your question via mail. What is your email adress?');
+    },
+    (session, results) => {
+        var transporter = nodemailer.createTransport({
+            host: 'smtp.mail.de',
+            port: '465',
+            secure: true,
+            auth: {
+                user: 'delibot@mail.de',
+                pass: 'DeliBot18!'
+            }
+        });
+        var mailOptions = {
+            from: 'delibot@mail.de',
+            to: results.response,
+            subject: 'BotMail',
+            text: session.conversationData.question
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702480424010.')
+            } else {
+                session.send('Thank you for providing your email adress. I have informed an employee to answer your question.');
+            }
+        });
+        session.endDialog();
+    }
+]).triggerAction({
+    matches: 'None'
+})
+
 bot.dialog('/', intents);
 
 intents.matches('qna', [
@@ -158,13 +188,3 @@ intents.matches('qna', [
         session.send(answerEntity.entity);
     }
 ]);
-
-/* bot.dialog('QNA',
-    (session, args, next) => {
-        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
-        session.send(answerEntity.entity);
-        session.endDialog();
-    }
-).triggerAction({
-    matches: 'QNA'
-}) */

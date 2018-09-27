@@ -6,6 +6,7 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var cognitiveservices = require('botbuilder-cognitiveservices');
+var nodemailer = require('nodemailer');
 require('dotenv-extended').load();
 
 // Setup Restify Server
@@ -117,6 +118,41 @@ bot.dialog('AccessoryToVacuum',
     }
 ).triggerAction({
     matches: 'AccessoryToVacuum'
+})
+
+bot.dialog('None', [
+    (session) => {
+        session.conversationData.question = session.message.text;
+        builder.Prompts.text(session, 'I am sorry, unfortunately I cannot answer your question. I will inform an employee to answer your question via mail. What is your email adress?');
+    },
+    (session, results) => {
+        var transporter = nodemailer.createTransport({
+            host: 'smtp.mail.de',
+            port: '465',
+            secure: true,
+            auth: {
+                user: 'delibot@mail.de',
+                pass: 'DeliBot18!'
+            }
+        });
+        var mailOptions = {
+            from: 'delibot@mail.de',
+            to: results.response,
+            subject: 'BotMail',
+            text: session.conversationData.question
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702484020.')
+            } else {
+                session.send('Thank you for providing your email adress. I have informed an employee to answer your question.');
+            }
+        });
+        session.endDialog();
+    }
+]).triggerAction({
+    matches: 'None'
 })
 
 bot.dialog('/', intents);

@@ -7,6 +7,8 @@ var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
+var dusts = require('./dusts.json');
+var models = require('./models.json');
 require('dotenv-extended').load();
 
 // Setup Restify Server
@@ -85,12 +87,30 @@ bot.dialog('HelpDialog',
 })
 
 bot.dialog('SearchForVacuum',
-    (session) => {
-        session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
-    }
+   function (session, args) {
+       session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
+       var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+
+       if(material) {
+           session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
+           for(i in dusts.dustmatches) {
+               if(dusts.dustmatches[i].dust === material.entity){
+                   session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+                   session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
+                   //Todo: beachte: "oder höher"
+                   for(j in models.vacuum){
+                       console.log((models.vacuum[j].model).substring(0,3));
+                       if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                           session.send("Absaugmobil %s mit der TNummer: %s", models.vacuum[j].model, models.vacuum[j].id);
+                       }
+                   }
+               }
+           };
+       }
+       session.endDialog();
+   },
 ).triggerAction({
-    matches: 'SearchForVacuum'
+   matches: 'SearchForVacuum'
 })
 
 bot.dialog('MaterialToVacuum',[

@@ -49,7 +49,7 @@ var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.m
 
 console.log('https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey);
 
-const LuisModelUrl = 'https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/87dcb46e-14e5-438a-be34-a9e321a1cd0b?subscription-key=cb6e1cb4eb494a55b7933066b5cd71a0&timezoneOffset=60&q=';
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -81,7 +81,7 @@ bot.dialog('SearchForVacuum',
         session.endDialog();
     }
 ).triggerAction({
-    matches: 'SearchForVacum'
+    matches: 'SearchForVacuum'
 })
 
 bot.dialog('MaterialToVacuum',
@@ -90,7 +90,7 @@ bot.dialog('MaterialToVacuum',
         session.endDialog();
     }
 ).triggerAction({
-    matches: 'MaterialToVacum'
+    matches: 'MaterialToVacuum'
 })
 
 bot.dialog('DetailsToVacuum',

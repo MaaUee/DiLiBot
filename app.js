@@ -144,7 +144,7 @@ bot.dialog('None', [
 
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
-                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702484020.')
+                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702480424010.')
             } else {
                 session.send('Thank you for providing your email adress. I have informed an employee to answer your question.');
             }

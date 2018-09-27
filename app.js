@@ -10,14 +10,14 @@ require('dotenv-extended').load();
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+    console.log('%s listening to %s', server.name, server.url);
 });
-  
+
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
     appPassword: process.env.MicrosoftAppPassword,
-    openIdMetadata: process.env.BotOpenIdMetadata 
+    openIdMetadata: process.env.BotOpenIdMetadata
 });
 
 // Listen for messages from users 
@@ -50,6 +50,12 @@ var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.m
 console.log('https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey);
 
 const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
+
+var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
+    knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',
+    authKey: '7e9cdf99-4bc5-4c55-81d9-4e9371fecc75',
+    top: 4
+});
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -110,3 +116,17 @@ bot.dialog('AccessoryToVacuum',
 ).triggerAction({
     matches: 'AccessoryToVacuum'
 })
+
+/* intents.matches('qna', [
+    function (session, args, next) {
+        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
+        session.send(answerEntity.entity);
+    }
+]); */
+
+bot.dialog('QNA',
+    (session, args, next) => {
+        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
+        session.send(answerEntity.entity);
+    }
+);

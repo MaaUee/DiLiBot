@@ -5,23 +5,23 @@ A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework.
 var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
+var cognitiveservices = require('botbuilder-cognitiveservices');
 require('dotenv-extended').load();
 
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+    console.log('%s listening to %s', server.name, server.url);
 });
-  
+
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
-    appPassword: process.env.MicrosoftAppPassword,
-    openIdMetadata: process.env.BotOpenIdMetadata 
+    appPassword: process.env.MicrosoftAppPassword
 });
 
 // Listen for messages from users 
-server.post('/api/messages', connector.listen());
+/* server.post('/api/messages', connector.listen()); */
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -29,18 +29,25 @@ server.post('/api/messages', connector.listen());
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-var tableName = 'botdata';
+/* var tableName = 'botdata';
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-
+ */
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('You reached the default message handler Manu. You said \'%s\'.', session.message.text);
+var bot = new builder.UniversalBot(connector);
+bot.set('storage', new builder.MemoryBotStorage());         // Register in-memory state storage
+server.post('/api/messages', connector.listen());
+
+var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
+    knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',
+    authKey: '7e9cdf99-4bc5-4c55-81d9-4e9371fecc75',
+    endpointHostName: 'https://diliqnakb.azurewebsites.net/qnamaker',
+    top: 4
 });
 
-bot.set('storage', tableStorage);
+/* bot.set('storage', tableStorage); */
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
@@ -56,6 +63,8 @@ bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
+var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
+
 bot.dialog('GreetingDialog',
     (session) => {
         session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
@@ -109,3 +118,22 @@ bot.dialog('AccessoryToVacuum',
 ).triggerAction({
     matches: 'AccessoryToVacuum'
 })
+
+bot.dialog('/', intents);
+
+intents.matches('qna', [
+    function (session, args, next) {
+        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
+        session.send(answerEntity.entity);
+    }
+]);
+
+/* bot.dialog('QNA',
+    (session, args, next) => {
+        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
+        session.send(answerEntity.entity);
+        session.endDialog();
+    }
+).triggerAction({
+    matches: 'QNA'
+}) */

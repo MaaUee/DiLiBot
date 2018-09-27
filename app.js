@@ -29,14 +29,15 @@ var connector = new builder.ChatConnector({
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+//var tableName = 'botdata';
+//var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+//var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
+
 bot.set('storage', new builder.MemoryBotStorage());         // Register in-memory state storage
 server.post('/api/messages', connector.listen());
 
@@ -47,7 +48,7 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-bot.set('storage', tableStorage);
+bot.set('storage', inMemoryStorage);
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
@@ -55,7 +56,7 @@ var luisAPIKey = process.env.LuisAPIKey;
 var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.microsoft.com';
 
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + '87dcb46e-14e5-438a-be34-a9e321a1cd0b' + '?subscription-key=' + 'cb6e1cb4eb494a55b7933066b5cd71a0';
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -92,12 +93,42 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',
-    (session) => {
+/* dusts.json
+** ask for {dustclass} (Model /T-Nr)
+** search for {dust}s like {entity}
+** ask user for confirmation
+*/
+bot.dialog('MaterialToVacuum',[
+    (session, args, next) => {
+
+        var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var materialEntity = material.entity;
+
+        if (vaccumModel && material) {
+            session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
+            session.send('Your Material is: ' + material.entity);
+            next({ response: {
+                vaccumModel: vaccumModel.entity,
+                material: material.entity
+            }}); 
+        }
+        else if (material && !vaccumModel) {
+            // no entities detected, ask user for a destination
+            session.conversationData.material = material.entity;
+            builder.Prompts.text(session, 'Please enter your Vaccum Model');
+        }
+
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    
+    },(session, results) => {
+        //TODO unterscheiden von prompt oder nicht prompt daten
+            var vacumModel = results.response;
+            var material = session.conversationData.material;
+            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
+            session.endDialog();
     }
-).triggerAction({
+]).triggerAction({
     matches: 'MaterialToVacuum'
 })
 

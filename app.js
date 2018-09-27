@@ -29,6 +29,8 @@ server.post('/api/messages', connector.listen());
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
+var inMemoryStorage = new builder.MemoryBotStorage();
+
 //var tableName = 'botdata';
 //var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 //var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
@@ -38,7 +40,7 @@ server.post('/api/messages', connector.listen());
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
 
-//bot.set('storage', tableStorage);
+bot.set('storage', inMemoryStorage);
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
@@ -91,6 +93,7 @@ bot.dialog('MaterialToVacuum',[
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var materialEntity = material.entity;
 
         if (vaccumModel && material) {
             session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
@@ -102,14 +105,17 @@ bot.dialog('MaterialToVacuum',[
         }
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a destination
+            session.userData.material = material.entity;
             builder.Prompts.text(session, 'Please enter your Vaccum Model');
         }
 
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
     
     },(session, results) => {
-            var vacumModel = results.response.vaccumModel;
-            session.send(vacumModel + 'uhuuuuu'); 
+        //TODO unterscheiden von prompt oder nicht prompt daten
+            var vacumModel = results.response;
+            var material = session.userData.material;
+            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
             session.endDialog();
     }
 ]).triggerAction({

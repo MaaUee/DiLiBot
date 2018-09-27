@@ -105,7 +105,7 @@ bot.dialog('MaterialToVacuum',[
         }
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a destination
-            session.userData.material = material.entity;
+            session.conversationData.material = material.entity;
             builder.Prompts.text(session, 'Please enter your Vaccum Model');
         }
 
@@ -114,7 +114,7 @@ bot.dialog('MaterialToVacuum',[
     },(session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
             var vacumModel = results.response;
-            var material = session.userData.material;
+            var material = session.conversationData.material;
             session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
             session.endDialog();
     }

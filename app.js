@@ -36,9 +36,7 @@ server.post('/api/messages', connector.listen());
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
-});
+var bot = new builder.UniversalBot(connector);
 
 //bot.set('storage', tableStorage);
 
@@ -83,12 +81,38 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',
-    (session) => {
+/* dusts.json
+** ask for {dustclass} (Model /T-Nr)
+** search for {dust}s like {entity}
+** ask user for confirmation
+*/
+bot.dialog('MaterialToVacuum',[
+    (session, args, next) => {
+
+        var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+
+        if (vaccumModel && material) {
+            session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
+            session.send('Your Material is: ' + material.entity);
+            next({ response: {
+                vaccumModel: vaccumModel.entity,
+                material: material.entity
+            }}); 
+        }
+        else if (material && !vaccumModel) {
+            // no entities detected, ask user for a destination
+            builder.Prompts.text(session, 'Please enter your Vaccum Model');
+        }
+
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    
+    },(session, results) => {
+            var vacumModel = results.response.vaccumModel;
+            session.send(vacumModel + 'uhuuuuu'); 
+            session.endDialog();
     }
-).triggerAction({
+]).triggerAction({
     matches: 'MaterialToVacuum'
 })
 

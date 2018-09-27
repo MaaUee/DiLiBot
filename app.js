@@ -37,7 +37,7 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
+    session.send('You reached the default message handler Manu. You said \'%s\'.', session.message.text);
 });
 
 bot.set('storage', tableStorage);

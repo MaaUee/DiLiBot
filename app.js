@@ -93,20 +93,22 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',[
+bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
         var materialEntity = material.entity;
 
         if (vaccumModel && material) {
             session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
             session.send('Your Material is: ' + material.entity);
-            next({ response: {
-                vaccumModel: vaccumModel.entity,
-                material: material.entity
-            }}); 
+            next({
+                response: {
+                    vaccumModel: vaccumModel.entity,
+                    material: material.entity
+                }
+            });
         }
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a destination
@@ -115,13 +117,13 @@ bot.dialog('MaterialToVacuum',[
         }
 
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-    
-    },(session, results) => {
+
+    }, (session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
-            var vacumModel = results.response;
-            var material = session.conversationData.material;
-            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
-            session.endDialog();
+        var vacumModel = results.response;
+        var material = session.conversationData.material;
+        session.send('Your Model: ' + vacumModel + 'And your Material: ' + material);
+        session.endDialog();
     }
 ]).triggerAction({
     matches: 'MaterialToVacuum'
@@ -156,8 +158,8 @@ bot.dialog('None', [
             port: '465',
             secure: true,
             auth: {
-                user: 'delibot@mail.de',
-                pass: 'DeliBot18!'
+                user: 'dilibot@mail.de',
+                pass: 'DiliBot18!'
             }
         });
         var mailOptions = {

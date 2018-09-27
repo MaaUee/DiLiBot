@@ -93,12 +93,37 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',
-    (session) => {
+bot.dialog('MaterialToVacuum',[
+    (session, args, next) => {
+
+        var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var materialEntity = material.entity;
+
+        if (vaccumModel && material) {
+            session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
+            session.send('Your Material is: ' + material.entity);
+            next({ response: {
+                vaccumModel: vaccumModel.entity,
+                material: material.entity
+            }}); 
+        }
+        else if (material && !vaccumModel) {
+            // no entities detected, ask user for a destination
+            session.conversationData.material = material.entity;
+            builder.Prompts.text(session, 'Please enter your Vaccum Model');
+        }
+
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    
+    },(session, results) => {
+        //TODO unterscheiden von prompt oder nicht prompt daten
+            var vacumModel = results.response;
+            var material = session.conversationData.material;
+            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
+            session.endDialog();
     }
-).triggerAction({
+]).triggerAction({
     matches: 'MaterialToVacuum'
 })
 
@@ -163,13 +188,3 @@ intents.matches('qna', [
         session.send(answerEntity.entity);
     }
 ]);
-
-/* bot.dialog('QNA',
-    (session, args, next) => {
-        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
-        session.send(answerEntity.entity);
-        session.endDialog();
-    }
-).triggerAction({
-    matches: 'QNA'
-}) */

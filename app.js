@@ -9,7 +9,11 @@ var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
 var dusts = require('./dusts.json');
 var models = require('./models.json');
+var api = require('./productApi.js');
+var request = require('request');
+var fetch = require('node-fetch');
 require('dotenv-extended').load();
+var AdaptiveCards = require("adaptivecards");
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -31,11 +35,12 @@ var connector = new builder.ChatConnector({
 * We provide adapters for Azure Table, CosmosDb, SQL Azure, or you can implement your own!
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
-
-/* var tableName = 'botdata';
+/*
+var tableName = 'botdata';
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
  */
+
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
@@ -50,8 +55,6 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-/* bot.set('storage', tableStorage); */
-
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
 var luisAPIKey = process.env.LuisAPIKey;
@@ -59,7 +62,7 @@ var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.m
 
 
 const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
-
+// test
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 bot.recognizer(recognizer);
@@ -68,12 +71,73 @@ bot.recognizer(recognizer);
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
+function getToken(){
+    return new Promise((resolve)=>{
+        var tokenOptions = {
+            url: 'https://login-festool-qs.azurewebsites.net/connect/token',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.siren+json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic aGFja2F0aG9uLmhkbS5zdGFnaW5nOkw2ZUJKUWhBUzdlQ01zOE9NM1pl'
+            },
+            body: 'grant_type=client_credentials&scope=tts.pim_catalog'
+        } 
+    
+        request.post(tokenOptions, function(error, response, body){
+            resolve(body);
+        })
+    })
+}
+
+function getProduct(token, id){
+    return new Promise((resolve)=>{
+        var headers = {
+            'Accept': 'application/vnd.siren+json',
+            'X-TTS-ApiKey': '580deae71c371f0001000008670cd3a266244d69494b6d96ffe12227',
+            'Authorization': 'Bearer ' + token
+        }
+    
+        var options = {
+            url: 'https://api-qs.tts-company.com:443/pimservice/MachineModel/de-DE/' + id,
+            method: 'GET',
+            headers: headers
+        }
+    
+        request.get(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                resolve(body);
+            }
+        })
+    })
+}
+
+async function connectApi(){
+    const token = await getToken();
+    const tokenId = JSON.parse(token);
+    const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
+
+
+    session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
+
+
+}
+
+bot.on('conversationUpdate',(session,activity,message) => {
+    if(session.membersAdded){
+       session.membersAdded.forEach(function (identity) {
+    if(identity.id === session.address.bot.id){
+       bot.beginDialog(session.address,'GreetingDialog');
+       }
+    });
+   }
+ })
+
 bot.dialog('GreetingDialog',
-    (session) => {
-        session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
+    (session)=>{
+        session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
         session.endDialog();
-    }
-).triggerAction({
+}).triggerAction({
     matches: 'Greeting'
 })
 
@@ -87,60 +151,76 @@ bot.dialog('HelpDialog',
 })
 
 bot.dialog('SearchForVacuum',
-   function (session, args) {
-       session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
-       var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
-
-       if(material) {
-           session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
-           for(i in dusts.dustmatches) {
-               if(dusts.dustmatches[i].dust === material.entity){
-                   session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-                   session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
-                   //Todo: beachte: "oder höher"
-                   var msg = new builder.Message(session);
-                   msg.attachmentLayout(builder.AttachmentLayout.carousel);
-                   var attachmentsArray = [];
-                   for(j in models.vacuum){
-                       if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-
-                           var obj = 
-                               new builder.HeroCard(session)
-                                   .title("Absaugmobil %s",models.vacuum[j].model)
-                                   .text("geeignet")
-                                   .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
-                                   .buttons([
-                                       builder.CardAction.imBack(session, "https://www.festool.de/produkte/saugen/absaugmobile/575291---ctl-26-e-ac-hd#%C3%9Cbersicht", "mehr")
-                                   ])
-                           ;
-                           attachmentsArray.push(obj);
-                           
-                       }
-                   }
-                   msg.attachments(attachmentsArray);
-               }
-           };
-       }
-       session.send(msg).endDialog();
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
    },
 ).triggerAction({
    matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',[
+function findVacuumToMaterial(session, material){
+    for(i in dusts.dustmatches) {
+        if(dusts.dustmatches[i].dust === material.entity){
+            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            //Todo: beachte: "oder höher"
+            var msg = new builder.Message(session);
+            msg.attachmentLayout(builder.AttachmentLayout.carousel);
+            var attachmentsArray = [];
+            for(j in models.vacuumTypes){
+                if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+                    var obj = 
+                        new builder.HeroCard(session)
+                            .title("Absaugmobil %s",models.vacuumTypes[j].model)
+                            .text("geeignet")
+                            .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
+                            .buttons([
+                                builder.CardAction.openUrl(session, url, "mehr")
+                            ])
+                    ;
+                    attachmentsArray.push(obj);
+                }
+            }
+            msg.attachments(attachmentsArray);
+        }
+    }
+    session.send(msg).endDialog();
+}
+
+bot.dialog('/BuyVacuum',
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+            session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
+            bot.beginDialog('/SearchVacuumToMaterial');
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
+   },
+)
+
+bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
         var materialEntity = material.entity;
 
         if (vaccumModel && material) {
             session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
             session.send('Your Material is: ' + material.entity);
-            next({ response: {
-                vaccumModel: vaccumModel.entity,
-                material: material.entity
-            }}); 
+            next({
+                response: {
+                    vaccumModel: vaccumModel.entity,
+                    material: material.entity
+                }
+            });
         }
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a destination
@@ -149,12 +229,22 @@ bot.dialog('MaterialToVacuum',[
         }
 
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-    
-    },(session, results) => {
+
+    }, (session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
-            var vacumModel = results.response;
-            var material = session.conversationData.material;
-            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
+            var vacuumModel = results.response.vaccumModel || results.response;
+            var material = results.response.material || session.conversationData.material;
+            session.send('Your Model: ' + vacuumModel + 'And your Material: ' + material);
+            dusts.dustmatches.forEach((dustType) => {
+                if(dustType.dust === material){
+                    session.send('Alle Sauger mit Klasse ' + dustType.dustclass + ' und höher können ' + material + 'saugen');
+                    models.vacuumTypes.forEach((vacuum) => {
+                        if((vacuum.model).includes(vacuumModel) && (vacuum.model).includes(dustType.dustclass)){
+                            session.send('Ihr Staubsauger: ' + vacuumModel + 'kann ' + material + 'saugen!');
+                        }
+                    });
+                }
+            });
             session.endDialog();
     }
 ]).triggerAction({

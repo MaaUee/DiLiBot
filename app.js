@@ -11,7 +11,6 @@ var dusts = require('./dusts.json');
 var models = require('./models.json');
 var api = require('./productApi.js');
 var request = require('request');
-var fetch = require('node-fetch');
 require('dotenv-extended').load();
 var AdaptiveCards = require("adaptivecards");
 
@@ -27,25 +26,25 @@ var connector = new builder.ChatConnector({
     appPassword: process.env.MicrosoftAppPassword
 });
 
-// Listen for messages from users 
-/* server.post('/api/messages', connector.listen()); */
-
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
 * We provide adapters for Azure Table, CosmosDb, SQL Azure, or you can implement your own!
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
-/*
+
 var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
- */
+var azureTableClient = process.env.NODE_ENV !== 'development' ? new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']) : '';
+var tableStorage = process.env.NODE_ENV !== 'development' ? new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient) : '';
+
+
 
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
-bot.set('storage', new builder.MemoryBotStorage());         // Register in-memory state storage
+var memoryInStorage = new builder.MemoryBotStorage();
+storage = process.env.NODE_ENV === 'development' ? memoryInStorage : tableStorage;
+bot.set('storage', storage);
 server.post('/api/messages', connector.listen());
 
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({

@@ -13,6 +13,7 @@ var api = require('./productApi.js');
 var request = require('request');
 var fetch = require('node-fetch');
 require('dotenv-extended').load();
+var AdaptiveCards = require("adaptivecards");
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -54,6 +55,11 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
+<<<<<<< HEAD
+=======
+//bot.set('storage', tableStorage);
+
+>>>>>>> 913b3a35e83e736943fc775d262398535ab24185
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
 var luisAPIKey = process.env.LuisAPIKey;
@@ -116,11 +122,27 @@ async function connectApi(){
     const tokenId = JSON.parse(token);
     const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
 
+
     session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
+
 
 }
 
-bot.dialog('GreetingDialog',connectApi).triggerAction({
+bot.on('conversationUpdate',(session,activity,message) => {
+    if(session.membersAdded){
+       session.membersAdded.forEach(function (identity) {
+    if(identity.id === session.address.bot.id){
+       bot.beginDialog(session.address,'GreetingDialog');
+       }
+    });
+   }
+ })
+
+bot.dialog('GreetingDialog',
+    (session)=>{
+        session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
+        session.endDialog();
+}).triggerAction({
     matches: 'Greeting'
 })
 
@@ -134,30 +156,59 @@ bot.dialog('HelpDialog',
 })
 
 bot.dialog('SearchForVacuum',
-   function (session, args) {
-       session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
-       var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
-
-       if(material) {
-           session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
-           for(i in dusts.dustmatches) {
-               if(dusts.dustmatches[i].dust === material.entity){
-                   session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-                   session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
-                   //Todo: beachte: "oder höher"
-                   for(j in models.vacuum){
-                       if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-                           session.send("Absaugmobil %s mit der TNummer: %s", models.vacuum[j].model, models.vacuum[j].id);
-                       }
-                   }
-               }
-           };
-       }
-       session.endDialog();
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
    },
 ).triggerAction({
     matches: 'SearchForVacuum'
 })
+
+function findVacuumToMaterial(session, material){
+    for(i in dusts.dustmatches) {
+        if(dusts.dustmatches[i].dust === material.entity){
+            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            //Todo: beachte: "oder höher"
+            var msg = new builder.Message(session);
+            msg.attachmentLayout(builder.AttachmentLayout.carousel);
+            var attachmentsArray = [];
+            for(j in models.vacuumTypes){
+                if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+                    var obj = 
+                        new builder.HeroCard(session)
+                            .title("Absaugmobil %s",models.vacuumTypes[j].model)
+                            .text("geeignet")
+                            .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
+                            .buttons([
+                                builder.CardAction.openUrl(session, url, "mehr")
+                            ])
+                    ;
+                    attachmentsArray.push(obj);
+                }
+            }
+            msg.attachments(attachmentsArray);
+        }
+    }
+    session.send(msg).endDialog();
+}
+
+bot.dialog('/BuyVacuum',
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+            session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
+            bot.beginDialog('/SearchVacuumToMaterial');
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
+   },
+)
 
 bot.dialog('MaterialToVacuum', [
     (session, args, next) => {

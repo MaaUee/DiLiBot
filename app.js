@@ -32,10 +32,10 @@ var connector = new builder.ChatConnector({
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-/* var tableName = 'botdata';
+var tableName = 'botdata';
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
- */
+
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
@@ -50,7 +50,7 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-/* bot.set('storage', tableStorage); */
+bot.set('storage', tableStorage);
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
@@ -124,23 +124,25 @@ bot.dialog('SearchForVacuum',
        session.send(msg).endDialog();
    },
 ).triggerAction({
-   matches: 'SearchForVacuum'
+    matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum',[
+bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
         var materialEntity = material.entity;
 
         if (vaccumModel && material) {
             session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
             session.send('Your Material is: ' + material.entity);
-            next({ response: {
-                vaccumModel: vaccumModel.entity,
-                material: material.entity
-            }}); 
+            next({
+                response: {
+                    vaccumModel: vaccumModel.entity,
+                    material: material.entity
+                }
+            });
         }
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a destination
@@ -149,13 +151,13 @@ bot.dialog('MaterialToVacuum',[
         }
 
         session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-    
-    },(session, results) => {
+
+    }, (session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
-            var vacumModel = results.response;
-            var material = session.conversationData.material;
-            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
-            session.endDialog();
+        var vacumModel = results.response;
+        var material = session.conversationData.material;
+        session.send('Your Model: ' + vacumModel + 'And your Material: ' + material);
+        session.endDialog();
     }
 ]).triggerAction({
     matches: 'MaterialToVacuum'

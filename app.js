@@ -33,8 +33,8 @@ var connector = new builder.ChatConnector({
 * ---------------------------------------------------------------------------------------- */
 
 var tableName = 'botdata';
-var azureTableClient = process.env.NODE_ENV !== 'development' ? new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']) : '';
-var tableStorage = process.env.NODE_ENV !== 'development' ? new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient) : '';
+var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
 
 
@@ -42,9 +42,9 @@ var tableStorage = process.env.NODE_ENV !== 'development' ? new botbuilder_azure
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
-var memoryInStorage = new builder.MemoryBotStorage();
-storage = process.env.NODE_ENV === 'development' ? memoryInStorage : tableStorage;
-bot.set('storage', storage);
+// var memoryInStorage = new builder.MemoryBotStorage();
+// storage = process.env.NODE_ENV === 'development' ? memoryInStorage : tableStorage;
+bot.set('storage', tableStorage);
 server.post('/api/messages', connector.listen());
 
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({

@@ -29,10 +29,9 @@ var tableName = 'botdata';
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
-});
+var bot = new builder.UniversalBot(connector);
 
+//bot.set('storage', new builder.MemoryBotStorage());
 bot.set('storage', tableStorage);
 
 
@@ -57,6 +56,8 @@ bot.recognizer(recognizer);
 // Add a dialog for each intent that the LUIS app recognizes.
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
+bot.dialog('/', intents);
+/*
 function getToken(){
     return new Promise((resolve)=>{
         var tokenOptions = {
@@ -106,7 +107,7 @@ async function connectApi(){
 
     session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
 }
-
+*/
 bot.on('conversationUpdate',(session,activity,message) => {
     if(session.membersAdded){
        session.membersAdded.forEach(function (identity) {
@@ -138,17 +139,16 @@ bot.dialog('SearchForVacuum',
     function (session, args) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            session.send('HI!!!');
-            /*findVacuumToMaterial(session, material);*/
+            findVacuumToMaterial(session, material);
         } else {
             bot.beginDialog('/BuyVacuum');
         }
-   },
+   }
 ).triggerAction({
     matches: 'SearchForVacuum'
 })
 
-/*function findVacuumToMaterial(session, material){
+function findVacuumToMaterial(session, material){
     for(i in dusts.dustmatches) {
         if(dusts.dustmatches[i].dust === material.entity){
             session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
@@ -175,19 +175,19 @@ bot.dialog('SearchForVacuum',
         }
     }
     session.send(msg).endDialog();
-}*/
+}
 
 bot.dialog('/BuyVacuum',
     function (session, args) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            //findVacuumToMaterial(session, material);
+            findVacuumToMaterial(session, material);
             session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
             bot.beginDialog('/SearchVacuumToMaterial');
         } else {
             bot.beginDialog('/BuyVacuum');
         }
-   },
+   }
 )
 
 bot.dialog('MaterialToVacuum', [
@@ -288,8 +288,6 @@ bot.dialog('None', [
 ]).triggerAction({
     matches: 'None'
 })
-
-bot.dialog('/', intents);
 
 intents.matches('qna', [
     function (session, args, next) {

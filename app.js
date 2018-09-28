@@ -1,7 +1,3 @@
-/*-----------------------------------------------------------------------------
-A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework. 
------------------------------------------------------------------------------*/
-
 var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
@@ -28,26 +24,15 @@ var connector = new builder.ChatConnector({
 });
 
 server.post('/api/messages', connector.listen());
-/*----------------------------------------------------------------------------------------
-* Bot Storage: This is a great spot to register the private state storage for your bot. 
-* We provide adapters for Azure Table, CosmosDb, SQL Azure, or you can implement your own!
-* For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
-* ---------------------------------------------------------------------------------------- */
 
 var tableName = 'botdata';
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
-
-
-// Create your bot with a function to receive messages from the user
-// This default message handler is invoked if the user's utterance doesn't
-// match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector, function (session, args) {
     session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
 });
-// var memoryInStorage = new builder.MemoryBotStorage();
-// storage = process.env.NODE_ENV === 'development' ? memoryInStorage : tableStorage;
+
 bot.set('storage', tableStorage);
 
 
@@ -65,13 +50,11 @@ var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.m
 
 
 const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
-// test
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
-// See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
 function getToken(){
@@ -122,8 +105,6 @@ async function connectApi(){
 
 
     session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
-
-
 }
 
 bot.on('conversationUpdate',(session,activity,message) => {
@@ -135,7 +116,7 @@ bot.on('conversationUpdate',(session,activity,message) => {
     });
    }
  })
-
+ 
 bot.dialog('GreetingDialog',
     (session)=>{
         session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
@@ -157,7 +138,8 @@ bot.dialog('SearchForVacuum',
     function (session, args) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            findVacuumToMaterial(session, material);
+            session.send('HI!!!');
+            /*findVacuumToMaterial(session, material);*/
         } else {
             bot.beginDialog('/BuyVacuum');
         }
@@ -166,7 +148,7 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-function findVacuumToMaterial(session, material){
+/*function findVacuumToMaterial(session, material){
     for(i in dusts.dustmatches) {
         if(dusts.dustmatches[i].dust === material.entity){
             session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
@@ -193,13 +175,13 @@ function findVacuumToMaterial(session, material){
         }
     }
     session.send(msg).endDialog();
-}
+}*/
 
 bot.dialog('/BuyVacuum',
     function (session, args) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            findVacuumToMaterial(session, material);
+            //findVacuumToMaterial(session, material);
             session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
             bot.beginDialog('/SearchVacuumToMaterial');
         } else {

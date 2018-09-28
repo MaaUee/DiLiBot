@@ -23,9 +23,11 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
-    appPassword: process.env.MicrosoftAppPassword
+    appPassword: process.env.MicrosoftAppPassword,
+    openIdMetadata: process.env.BotOpenIdMetadata 
 });
 
+server.post('/api/messages', connector.listen());
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
 * We provide adapters for Azure Table, CosmosDb, SQL Azure, or you can implement your own!
@@ -45,7 +47,7 @@ var bot = new builder.UniversalBot(connector);
 // var memoryInStorage = new builder.MemoryBotStorage();
 // storage = process.env.NODE_ENV === 'development' ? memoryInStorage : tableStorage;
 bot.set('storage', tableStorage);
-server.post('/api/messages', connector.listen());
+
 
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',

@@ -98,16 +98,30 @@ bot.dialog('SearchForVacuum',
                    session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
                    session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
                    //Todo: beachte: "oder höher"
+                   var msg = new builder.Message(session);
+                   msg.attachmentLayout(builder.AttachmentLayout.carousel);
+                   var attachmentsArray = [];
                    for(j in models.vacuum){
-                       console.log((models.vacuum[j].model).substring(0,3));
                        if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-                           session.send("Absaugmobil %s mit der TNummer: %s", models.vacuum[j].model, models.vacuum[j].id);
+
+                           var obj = 
+                               new builder.HeroCard(session)
+                                   .title("Absaugmobil %s",models.vacuum[j].model)
+                                   .text("geeignet")
+                                   .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
+                                   .buttons([
+                                       builder.CardAction.imBack(session, "https://www.festool.de/produkte/saugen/absaugmobile/575291---ctl-26-e-ac-hd#%C3%9Cbersicht", "mehr")
+                                   ])
+                           ;
+                           attachmentsArray.push(obj);
+                           
                        }
                    }
+                   msg.attachments(attachmentsArray);
                }
            };
        }
-       session.endDialog();
+       session.send(msg).endDialog();
    },
 ).triggerAction({
    matches: 'SearchForVacuum'

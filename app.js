@@ -6,7 +6,6 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var cognitiveservices = require('botbuilder-cognitiveservices');
-const cognitiveServices = require('cognitive-services');
 var nodemailer = require('nodemailer');
 require('dotenv-extended').load();
 
@@ -21,17 +20,6 @@ var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
     appPassword: process.env.MicrosoftAppPassword
 });
-
-const speechOptions = {
-    speechRecognizer: new CognitiveServices.SpeechRecognizer({
-        subscriptionKey: '597b5c2195d44358a908750143bbfee2'
-    }),
-    speechSynthesizer: new CognitiveServices.SpeechSynthesizer({
-        gender: CognitiveServices.SynthesisGender.Female,
-        subscriptionKey: '597b5c2195d44358a908750143bbfee2',
-        voiceName: 'Microsoft Server Speech Text to Speech Voice (en-US, JessaRUS)'
-    })
-};
 
 // Listen for messages from users 
 /* server.post('/api/messages', connector.listen()); */

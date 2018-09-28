@@ -11,6 +11,7 @@ var dusts = require('./dusts.json');
 var models = require('./models.json');
 var api = require('./productApi.js');
 require('dotenv-extended').load();
+var AdaptiveCards = require("adaptivecards");
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -100,20 +101,22 @@ bot.dialog('SearchForVacuum',
                if(dusts.dustmatches[i].dust === material.entity){
                    session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
                    session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
+                   
                    //Todo: beachte: "oder höher"
                    var msg = new builder.Message(session);
                    msg.attachmentLayout(builder.AttachmentLayout.carousel);
                    var attachmentsArray = [];
-                   for(j in models.vacuum){
-                       if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-
+                   
+                   for(j in models.vacuumTypes){
+                       if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                            
                            var obj = 
                                new builder.HeroCard(session)
-                                   .title("Absaugmobil %s",models.vacuum[j].model)
+                                   .title("Absaugmobil %s",models.vacuumTypes[j].model)
                                    .text("geeignet")
                                    .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
                                    .buttons([
-                                       builder.CardAction.imBack(session, "https://www.festool.de/produkte/saugen/absaugmobile/575291---ctl-26-e-ac-hd#%C3%9Cbersicht", "mehr")
+                                       builder.CardAction.openUrl(session, "https://www.festool.de/produkte/saugen/absaugmobile/575291---ctl-26-e-ac-hd#%C3%9Cbersicht", "mehr")
                                    ])
                            ;
                            attachmentsArray.push(obj);

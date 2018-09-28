@@ -9,6 +9,7 @@ var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
 var dusts = require('./dusts.json');
 var models = require('./models.json');
+var api = require('./productApi.js');
 require('dotenv-extended').load();
 
 // Setup Restify Server
@@ -36,6 +37,7 @@ var connector = new builder.ChatConnector({
 var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
 var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
  */
+
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
@@ -71,6 +73,7 @@ var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 bot.dialog('GreetingDialog',
     (session) => {
         session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
+        var product = api.getProduct('id-96c3adba-dbc4-11e6-80dc-005056b345de');
         session.endDialog();
     }
 ).triggerAction({
@@ -99,7 +102,6 @@ bot.dialog('SearchForVacuum',
                    session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
                    //Todo: beachte: "oder höher"
                    for(j in models.vacuum){
-                       console.log((models.vacuum[j].model).substring(0,3));
                        if((models.vacuum[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
                            session.send("Absaugmobil %s mit der TNummer: %s", models.vacuum[j].model, models.vacuum[j].id);
                        }
@@ -138,9 +140,19 @@ bot.dialog('MaterialToVacuum',[
     
     },(session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
-            var vacumModel = results.response;
-            var material = session.conversationData.material;
-            session.send('Your Model: ' + vacumModel + 'And your Material: ' + material); 
+            var vacuumModel = results.response.vaccumModel || results.response;
+            var material = results.response.material || session.conversationData.material;
+            session.send('Your Model: ' + vacuumModel + 'And your Material: ' + material);
+            dusts.dustmatches.forEach((dustType) => {
+                if(dustType.dust === material){
+                    session.send('Alle Sauger mit Klasse ' + dustType.dustclass + ' und höher können ' + material + 'saugen');
+                    models.vacuumTypes.forEach((vacuum) => {
+                        if((vacuum.model).includes(vacuumModel) && (vacuum.model).includes(dustType.dustclass)){
+                            session.send('Ihr Staubsauger: ' + vacuumModel + 'kann ' + material + 'saugen!');
+                        }
+                    });
+                }
+            });
             session.endDialog();
     }
 ]).triggerAction({

@@ -1,8 +1,8 @@
 {
-    "vacuum":[
+    "vacuumTypes":[
         {"model":"CTH 26 E / a","id":"574939"},
         {"model":"CTH 48 E / a","id":"574941"},
-        {"model":"CTL 26 E AC","id":"574945"},
+        {"model":"CTL - 26 E AC","id":"574945"},
         {"model":"CTL 26 E","id":"574947"},
         {"model":"CTL 26 E SD","id":"574955"},
         {"model":"CTL 26 E SD E/A","id":"574956"},

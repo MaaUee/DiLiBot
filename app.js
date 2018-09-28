@@ -71,9 +71,23 @@ bot.recognizer(recognizer);
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
+
+bot.on('conversationUpdate',(session,activity,message) => {
+    if(session.membersAdded){
+       session.membersAdded.forEach(function (identity) {
+    if(identity.id === session.address.bot.id){
+       bot.beginDialog(session.address,'GreetingDialog');
+       //session.send(session.user.name)
+       //session.send('this is welcome message')
+       }
+    });
+   }
+ })
+
+
 bot.dialog('GreetingDialog',
     (session) => {
-        session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
+        session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
         var product = api.getProduct('id-96c3adba-dbc4-11e6-80dc-005056b345de');
         session.endDialog();
     }
@@ -91,47 +105,59 @@ bot.dialog('HelpDialog',
 })
 
 bot.dialog('SearchForVacuum',
-   function (session, args) {
-       session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
-       var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
-
-       if(material) {
-           session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
-           for(i in dusts.dustmatches) {
-               if(dusts.dustmatches[i].dust === material.entity){
-                   session.send("Alle Sauger mit Klasse %s und höher können %s saugen", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-                   session.send("Folgende Produkte wurden Ihnen vorgeschlagen:");
-                   
-                   //Todo: beachte: "oder höher"
-                   var msg = new builder.Message(session);
-                   msg.attachmentLayout(builder.AttachmentLayout.carousel);
-                   var attachmentsArray = [];
-                   
-                   for(j in models.vacuumTypes){
-                       if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-                            
-                           var obj = 
-                               new builder.HeroCard(session)
-                                   .title("Absaugmobil %s",models.vacuumTypes[j].model)
-                                   .text("geeignet")
-                                   .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
-                                   .buttons([
-                                       builder.CardAction.openUrl(session, "https://www.festool.de/produkte/saugen/absaugmobile/575291---ctl-26-e-ac-hd#%C3%9Cbersicht", "mehr")
-                                   ])
-                           ;
-                           attachmentsArray.push(obj);
-                           
-                       }
-                   }
-                   msg.attachments(attachmentsArray);
-               }
-           };
-       }
-       session.send(msg).endDialog();
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
    },
 ).triggerAction({
     matches: 'SearchForVacuum'
 })
+
+function findVacuumToMaterial(session, material){
+    for(i in dusts.dustmatches) {
+        if(dusts.dustmatches[i].dust === material.entity){
+            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            //Todo: beachte: "oder höher"
+            var msg = new builder.Message(session);
+            msg.attachmentLayout(builder.AttachmentLayout.carousel);
+            var attachmentsArray = [];
+            for(j in models.vacuumTypes){
+                if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+                    var obj = 
+                        new builder.HeroCard(session)
+                            .title("Absaugmobil %s",models.vacuumTypes[j].model)
+                            .text("geeignet")
+                            .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
+                            .buttons([
+                                builder.CardAction.openUrl(session, url, "mehr")
+                            ])
+                    ;
+                    attachmentsArray.push(obj);
+                }
+            }
+            msg.attachments(attachmentsArray);
+        }
+    }
+    session.send(msg).endDialog();
+}
+
+bot.dialog('/BuyVacuum',
+    function (session, args) {
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            findVacuumToMaterial(session, material);
+            session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
+            bot.beginDialog('/SearchVacuumToMaterial');
+        } else {
+            bot.beginDialog('/BuyVacuum');
+        }
+   },
+)
 
 bot.dialog('MaterialToVacuum', [
     (session, args, next) => {

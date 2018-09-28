@@ -45,17 +45,6 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 var bot = new builder.UniversalBot(connector);
 bot.set('storage', tableStorage);
 
-bot.dialog('/', function (session) {
-    session.send('You said ' + session.message.text);
-});
-
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
-});
-
-bot.set('storage', tableStorage);
-
-
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',
     authKey: '7e9cdf99-4bc5-4c55-81d9-4e9371fecc75',
@@ -76,6 +65,9 @@ bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
+
+
+bot.dialog('/', intents);
 
 function getToken(){
     return new Promise((resolve)=>{
@@ -118,15 +110,6 @@ function getProduct(token, id){
     })
 }
 
-async function connectApi(){
-    const token = await getToken();
-    const tokenId = JSON.parse(token);
-    const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
-
-
-    session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
-}
-
 bot.on('conversationUpdate',(session,activity,message) => {
     if(session.membersAdded){
        session.membersAdded.forEach(function (identity) {
@@ -163,7 +146,7 @@ bot.dialog('SearchForVacuum',
         } else {
             bot.beginDialog('/BuyVacuum');
         }
-   },
+   }
 ).triggerAction({
     matches: 'SearchForVacuum'
 })
@@ -207,7 +190,7 @@ bot.dialog('/BuyVacuum',
         } else {
             bot.beginDialog('/BuyVacuum');
         }
-   },
+   }
 )
 
 bot.dialog('MaterialToVacuum', [
@@ -309,8 +292,7 @@ bot.dialog('None', [
     matches: 'None'
 })
 
-bot.dialog('/', intents);
-
+//test
 intents.matches('qna', [
     function (session, args, next) {
         var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');

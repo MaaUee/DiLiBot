@@ -9,7 +9,6 @@ var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
 var dusts = require('./dusts.json');
 var models = require('./models.json');
-var api = require('./productApi.js');
 var request = require('request');
 require('dotenv-extended').load();
 var AdaptiveCards = require("adaptivecards");
@@ -45,6 +44,13 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 var bot = new builder.UniversalBot(connector);
 bot.set('storage', tableStorage);
 
+var bot = new builder.UniversalBot(connector, function (session, args) {
+    session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
+});
+
+bot.set('storage', tableStorage);
+
+
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',
     authKey: '7e9cdf99-4bc5-4c55-81d9-4e9371fecc75',
@@ -65,7 +71,6 @@ bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
-
 
 bot.dialog('/', intents);
 
@@ -110,6 +115,17 @@ function getProduct(token, id){
     })
 }
 
+/*
+async function connectApi(){
+    const token = await getToken();
+    const tokenId = JSON.parse(token);
+    const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
+
+
+    session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
+}
+*/
+
 bot.on('conversationUpdate',(session,activity,message) => {
     if(session.membersAdded){
        session.membersAdded.forEach(function (identity) {
@@ -142,7 +158,7 @@ bot.dialog('SearchForVacuum',
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
             session.send('HI!!!');
-            /*findVacuumToMaterial(session, material);*/
+            findVacuumToMaterial(session, material);
         } else {
             bot.beginDialog('/BuyVacuum');
         }
@@ -151,7 +167,7 @@ bot.dialog('SearchForVacuum',
     matches: 'SearchForVacuum'
 })
 
-/*function findVacuumToMaterial(session, material){
+function findVacuumToMaterial(session, material){
     for(i in dusts.dustmatches) {
         if(dusts.dustmatches[i].dust === material.entity){
             session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
@@ -178,13 +194,13 @@ bot.dialog('SearchForVacuum',
         }
     }
     session.send(msg).endDialog();
-}*/
+}
 
 bot.dialog('/BuyVacuum',
     function (session, args) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            //findVacuumToMaterial(session, material);
+            findVacuumToMaterial(session, material);
             session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
             bot.beginDialog('/SearchVacuumToMaterial');
         } else {
@@ -292,7 +308,6 @@ bot.dialog('None', [
     matches: 'None'
 })
 
-//test
 intents.matches('qna', [
     function (session, args, next) {
         var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');

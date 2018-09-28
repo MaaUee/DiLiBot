@@ -10,6 +10,8 @@ var nodemailer = require('nodemailer');
 var dusts = require('./dusts.json');
 var models = require('./models.json');
 var api = require('./productApi.js');
+var request = require('request');
+var fetch = require('node-fetch');
 require('dotenv-extended').load();
 
 // Setup Restify Server
@@ -52,8 +54,6 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-bot.set('storage', tableStorage);
-
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
 var luisAPIKey = process.env.LuisAPIKey;
@@ -70,13 +70,57 @@ bot.recognizer(recognizer);
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
-bot.dialog('GreetingDialog',
-    (session) => {
-        session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
-        var product = api.getProduct('id-96c3adba-dbc4-11e6-80dc-005056b345de');
-        session.endDialog();
-    }
-).triggerAction({
+function getToken(){
+    return new Promise((resolve)=>{
+        var tokenOptions = {
+            url: 'https://login-festool-qs.azurewebsites.net/connect/token',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.siren+json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic aGFja2F0aG9uLmhkbS5zdGFnaW5nOkw2ZUJKUWhBUzdlQ01zOE9NM1pl'
+            },
+            body: 'grant_type=client_credentials&scope=tts.pim_catalog'
+        } 
+    
+        request.post(tokenOptions, function(error, response, body){
+            resolve(body);
+        })
+    })
+}
+
+function getProduct(token, id){
+    return new Promise((resolve)=>{
+        var headers = {
+            'Accept': 'application/vnd.siren+json',
+            'X-TTS-ApiKey': '580deae71c371f0001000008670cd3a266244d69494b6d96ffe12227',
+            'Authorization': 'Bearer ' + token
+        }
+    
+        var options = {
+            url: 'https://api-qs.tts-company.com:443/pimservice/MachineModel/de-DE/' + id,
+            method: 'GET',
+            headers: headers
+        }
+    
+        request.get(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                resolve(body);
+            }
+        })
+    })
+}
+
+async function connectApi(){
+    const token = await getToken();
+    const tokenId = JSON.parse(token);
+    const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
+
+    session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
+
+}
+
+bot.dialog('GreetingDialog',connectApi).triggerAction({
     matches: 'Greeting'
 })
 

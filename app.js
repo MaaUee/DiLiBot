@@ -36,15 +36,15 @@ server.post('/api/messages', connector.listen());
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+//var tableName = 'botdata';
+//var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+//var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
 
 // Create your bot with a function to receive messages from the user
 var bot = new builder.UniversalBot(connector);
-//bot.set('storage', new builder.MemoryBotStorage());
+bot.set('storage', new builder.MemoryBotStorage());
 
-bot.set('storage', tableStorage);
+//bot.set('storage', tableStorage);
 
 
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
@@ -67,8 +67,6 @@ bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
-
-bot.dialog('/', intents);
 
 function getToken(){
     return new Promise((resolve)=>{
@@ -121,6 +119,8 @@ async function connectApi(){
     session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
 }
 */
+
+bot.dialog('/', intents);
 
 bot.on('conversationUpdate',(session,activity,message) => {
     if(session.membersAdded){

@@ -158,7 +158,7 @@ bot.dialog('SearchForVacuum',[
         }
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            showVacuums(findVacuumToMaterial(session, material));
+            showVacuums(findVacuumToMaterial(session, material),session);
         } else {
            next();
         }
@@ -216,28 +216,28 @@ bot.dialog('SearchForVacuum',[
 
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Bitte wähle';
-    if(value.usecase === 'business'){
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+        
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
         session.beginDialog('Business', value);
-    }else if(value.usecase === 'private' || value.mobility){
-        session.beginDialog('Private', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
     }
 }
 
-bot.dialog('Private',[
+bot.dialog('Mobility',[
     (session) => {
         if(session.message.value.mobility){
             var mobility = session.message.value.mobility;
             if(mobility === "mobile"){
-               showVacuums(findPrivateVacuum());
-                session.endDialog;
+                showVacuums(findPrivateVacuum(session),session);
             }
-            
         }
-        else if(session.message.value.usecase){
-            console.log(session.message.value.usecase);
-            session.beginDialog('askForMobility', session.message.value.usecase);
-        }
-        
     }
 ])  
 
@@ -249,10 +249,9 @@ bot.dialog('Business',[
 ])  
 
 bot.dialog('askForMobility',[
-    function (session, args, next) {
+    function (session, args, next) { 
         if (session.message && session.message.value && session.message.value.mobility) {
             // A Card's Submit Action obj was received
-            console.log(session.message.value);
             processSubmitAction(session, session.message.value);
             return;
         }
@@ -300,20 +299,17 @@ bot.dialog('askForMobility',[
         var msg = new builder.Message(session)
             .addAttachment(choicebox);
         session.send(msg);
-        next();
     },
-    (session) => {
 
-    }
 ])
 
 
-function findPrivateVacuum(){
+function findPrivateVacuum(session){
     var vacuums = ["CTL Midi","CTL 26 E","CTL SYS", "CTL Mini", "CTL 26 EAC", "CTL 26 E AC HD"];
     var attachmentsArray = [];
     for(j in models.vacuumTypes){
         if(vacuums.includes(models.vacuumTypes[j].model)){
-            obj = buildHeroCard(j);
+            obj = buildHeroCard(j, session);
             attachmentsArray.push(obj);
         }
     }
@@ -337,7 +333,7 @@ function findVacuumToMaterial(session, material, usecase, volume){
                     condition = ctx.includes(dusts.dustmatches[i].dustclass);
                 }
                 if(condition){
-                    obj = buildHeroCard(j);
+                    obj = buildHeroCard(j, session);
                     attachmentsArray.push(obj);
                 }
             }
@@ -347,7 +343,7 @@ function findVacuumToMaterial(session, material, usecase, volume){
     return attachmentsArray;
 }
 
-function buildHeroCard(j){
+function buildHeroCard(j, session){
     var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
     var obj = 
         new builder.HeroCard(session)
@@ -360,11 +356,12 @@ function buildHeroCard(j){
     return obj;
 }
 
-function showVacuums(attachmentsArray = []){
+function showVacuums(attachmentsArray = [], session){
     var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel);
     msg.attachments(attachmentsArray);
     session.send(msg).endDialog();
+    console.log("now end Conversation");
 }
 
 bot.dialog('MaterialToVacuum', [

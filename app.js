@@ -158,50 +158,54 @@ bot.dialog('SearchForVacuum',[
            next();
         }
    },
-   function (session) {
+   (session, __, next) => {
         //builder.Prompts.choice(session, "Für was benötigst du deinen Sauger? \n", ["Privat", "Gewerblich"],{ listStyle: builder.ListStyle.button }); 
         choicebox = {
-                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                "type": "AdaptiveCard",
-                "version": "1.0",
-                "body": [
-                    {
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.0",
+                    "body": [
+                      {
                         "type": "Container",
                         "items": [
-                            {
-                                "type": "TextBlock",
-                                "text": "Für was benötigst du deinen Sauger?",
-                                "weight": "bolder",
-                                "size": "medium"
-                            }
+                          {
+                            "type": "TextBlock",
+                            "text": "Für was benötigst du deinen Sauger?",
+                            "weight": "bolder",
+                            "size": "medium"
+                          }
                         ]
-                    }
-                ],
-                "actions": [
-                  {
-                    "type": "Action.Submit",
-                    "title": "Privat",
-                    "data":{
-                        "forUse":"private" 
-                    }
-                  },
-                  {
-                    "type": "Action.Submit",
-                    "title": "Geschäftlich",
-                    "data":{
-                        "forUse":"business" 
-                    }
+                      }
+                    ],
+                    "actions": [
+                      {
+                        "type": "Action.Submit",
+                        "title": "Privat",
+                        "data":{
+                            "usecase":"private"
+                        }
+                      },
+                      {
+                        "type": "Action.Submit",
+                        "title": "Geschäftlich",
+                        "data":{
+                            "usecase":"business"
+                        }
+                      }
+                    ]
                   }
-                ]
-              
-        }
+              }
         var msg = new builder.Message(session)
             .addAttachment(choicebox);
         session.send(msg);
+        next();
+
     },
-    function (session, args) {
-        session.send( args.response +'is added to the basket');
-        session.endDialog(); //ToDo
+    (session) => {
+        const { value } = session.message;
+        console.log(value);
     }
 ]).triggerAction({
    matches: 'SearchForVacuum'

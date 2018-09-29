@@ -1,0 +1,319 @@
+        {  
+           "id":"201665",
+           "name":"Saugschlauch D 27x3,0m-AS-90°/CT",
+           "vacuum":["CTL SYS"]
+     
+        },
+        {  
+           "id":"202346",
+           "name":"Anschlußmuffe D 27 DM-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"202505",
+           "name":"Drehausgleich D 27 DAG90-AS/CT",
+           "vacuum":["CTL MINI / MIDI"]
+     
+        },
+        {  
+           "id":"202860",
+           "name":"Schlauchmuffe D 36 DAG-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"202931",
+           "name":"Schlauchmuffe D 36 DAG-AS-GQ/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"203129",
+           "name":"Handrohr D 36 HR-K AS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203137",
+           "name":"Verläng.-Rohr D 36 VR-K AS/3",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203206",
+           "name":"Schlauchmuffe D 50 DAG-AS-GQ/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"203408",
+           "name":"Reinigungsset D 36 HW-RS-Plus",
+           "vacuum":["CTL SYS"],
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203409",
+           "name":"Reinigungsset D 36 WB-RS-Plus",
+           "vacuum":["CTL SYS"],
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203428",
+           "name":"Reinigungsset D 27/36 S-RS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203429",
+           "name":"Reinigungsset D 27/36 P-RS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203430",
+           "name":"Reinigungsset D 27/36 K-RS-Plus",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203431",
+           "name":"Reinigungsset D 36 M-RS-Plus",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203432",
+           "name":"Reinigungsset D 36 BD 370 RS-Plus",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203433",
+           "name":"Reinigungsset D 36 BA-RS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203434",
+           "name":"Reinigungsset D 36 BU-RS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203435",
+           "name":"Reinigungsset D 36 UNI-RS-Plus",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203797",
+           "name":"Teppichdüse D 36 TD II",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"203809",
+           "name":"Turbo-Bürste D 36 TKB II",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"440404",
+           "name":"SAUGPINSEL D 36 SP",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"440408",
+           "name":"FLACHDUESE D 27 FDG",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"440412",
+           "name":"VERLAENG.ROHR D 50 VR-K 2X",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"440419",
+           "name":"SAUGPINSEL D 50 SP",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"447599",
+           "name":"VERLAENG.ROHR D 50 VR-M",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"450644",
+           "name":"TURBO-BÜRSTE D 36 TKB",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD"
+     
+        },
+        {  
+           "id":"452383",
+           "name":"SAUGSCHLAUCH D 27 MW",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD"
+     
+        },
+        {  
+           "id":"452384",
+           "name":"SAUGSCHLAUCH D 27 MW-AS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD"
+     
+        },
+        {  
+           "id":"452385",
+           "name":"SAUGSCHLAUCH D 36 MW-AS",
+           "vacuum":"CTL SYS",
+           "a":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD"
+     
+        },
+        {  
+           "id":"452386",
+           "name":"SAUGSCHLAUCH D 50 MW-AS",
+           "vacuum":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD"
+     
+        },
+        {  
+           "id":"452877",
+           "name":"SAUGSCHLAUCH D 27 X 3,5 M",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452878",
+           "name":"SAUGSCHLAUCH D 27 X 3,5 M - AS",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452879",
+           "name":"SAUGSCHLAUCH D 27 X 5 M",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452881",
+           "name":"SAUGSCHLAUCH D 36 X 3,5 M",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452882",
+           "name":"SAUGSCHLAUCH D 36 X 3,5 M - AS",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452883",
+           "name":"SAUGSCHLAUCH D 36 X 5 M",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452885",
+           "name":"SAUGSCHLAUCH D 36 X 7 M",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452886",
+           "name":"SAUGSCHLAUCH D 36 X 7 M - AS",
+           "vacuum":"CTL MINI / MIDI",
+           "b":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452888",
+           "name":"SAUGSCHLAUCH D 50 X 2,5 M - AS",
+           "vacuum":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },
+        {  
+           "id":"452890",
+           "name":"SAUGSCHLAUCH D 50 X 4 M - AS",
+           "vacuum":"CTL 26/36/48 AC HD",
+           "c":"CTM 26/36/48 AC HD",
+           "d":"CTH 26/48"
+        },

@@ -149,36 +149,87 @@ bot.dialog('HelpDialog',
     matches: 'Help'
 })
 
-bot.dialog('SearchForVacuum',
-    function (session, args) {
+bot.dialog('SearchForVacuum',[
+    function (session, args, next) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            session.send('HI!!!');
             findVacuumToMaterial(session, material);
         } else {
-            bot.beginDialog('/BuyVacuum');
+           next();
         }
-   }
-).triggerAction({
-    matches: 'SearchForVacuum'
+   },
+   function (session) {
+        //builder.Prompts.choice(session, "Für was benötigst du deinen Sauger? \n", ["Privat", "Gewerblich"],{ listStyle: builder.ListStyle.button }); 
+        choicebox = {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [
+                    {
+                        "type": "Container",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Für was benötigst du deinen Sauger?",
+                                "weight": "bolder",
+                                "size": "medium"
+                            }
+                        ]
+                    }
+                ],
+                "actions": [
+                  {
+                    "type": "Action.Submit",
+                    "title": "Privat",
+                    "data":{
+                        "forUse":"private" 
+                    }
+                  },
+                  {
+                    "type": "Action.Submit",
+                    "title": "Geschäftlich",
+                    "data":{
+                        "forUse":"business" 
+                    }
+                  }
+                ]
+              
+        }
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+    },
+    function (session, args) {
+        session.send( args.response +'is added to the basket');
+        session.endDialog(); //ToDo
+    }
+]).triggerAction({
+   matches: 'SearchForVacuum'
 })
 
 function findVacuumToMaterial(session, material){
     for(i in dusts.dustmatches) {
         if(dusts.dustmatches[i].dust === material.entity){
             session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-            //Todo: beachte: "oder höher"
             var msg = new builder.Message(session);
             msg.attachmentLayout(builder.AttachmentLayout.carousel);
             var attachmentsArray = [];
             for(j in models.vacuumTypes){
-                if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                var ctx= (models.vacuumTypes[j].model).substring(0,3);
+                var condition = (models.vacuumTypes[j].model).includes(dusts.dustmatches[i].dustclass);
+                if(dusts.dustmatches[i].dustclass === "L"){
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("M") || ctx.includes("H");
+                }else if(dusts.dustmatches[i].dustclass === "M"){
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("H");
+                }else if(dusts.dustmatches[i].dustclass === "H"){
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass);
+                }
+                if(condition){
                     var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
                     var obj = 
                         new builder.HeroCard(session)
                             .title("Absaugmobil %s",models.vacuumTypes[j].model)
-                            .text("geeignet")
-                            .images([builder.CardImage.create(session, 'https://festoolcdn.azureedge.net/productmedia/Images/jpg_large/2ac8bf50-a28e-11e7-80e0-005056b31774_800_533.jpg')])
+                            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
                             .buttons([
                                 builder.CardAction.openUrl(session, url, "mehr")
                             ])
@@ -191,19 +242,6 @@ function findVacuumToMaterial(session, material){
     }
     session.send(msg).endDialog();
 }
-
-bot.dialog('/BuyVacuum',
-    function (session, args) {
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
-        if(material) {
-            findVacuumToMaterial(session, material);
-            session.send('Ich suche für Sie nach Modellen, die %s saugen können' , material.entity);
-            bot.beginDialog('/SearchVacuumToMaterial');
-        } else {
-            bot.beginDialog('/BuyVacuum');
-        }
-   }
-)
 
 bot.dialog('MaterialToVacuum', [
     (session, args, next) => {

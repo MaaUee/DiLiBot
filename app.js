@@ -374,9 +374,6 @@ bot.dialog('MaterialToVacuum', [
         var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
 
         if (vaccumModel && material) {
-            console.log('DETECTED BOTH');
-            session.send('Du suchst nach dem Sauger: ' + vaccumModel.entity);
-            session.send('Dein Material ist: ' + material.entity);
             next({
                 response: {
                     vaccumModel: vaccumModel.entity,
@@ -385,24 +382,22 @@ bot.dialog('MaterialToVacuum', [
             });
         }
         else if (material && !vaccumModel) {
-            console.log('DETECTED JUST ONE!');
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Bitte gib das Modell deines Sauger ein: ');
+            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast: ');
         }
 
-    }, (session, results) => {
+    }, (session, results, next) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
             var vacuumModel = results.response.vaccumModel || results.response;
             var material = results.response.material || session.conversationData.material;
-            var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g,"");
-
-            if (vacuumModel) {
+            if(vacuumModel){
                 checkMaterialToVacuum(session, vacuumModel, material);
-            } else {
-                session.send('Ich verstehe dein Model nicht!');
+                next();
             }
-            session.endDialog();
+    },
+    (session) => {
+        session.endDialog();
     }
 ]).triggerAction({
     matches: 'MaterialToVacuum'
@@ -411,24 +406,39 @@ bot.dialog('MaterialToVacuum', [
 function checkMaterialToVacuum(session, vacuumModel, material){
     var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g,"");
     builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
-        if (entities[0].type === 'VacuumModel') {
-            session.send('Your Model: ' + vacuumModel + ' And your Material: ' + material);
+        if (entities[0] && entities[0].type === 'VacuumModel') {
             for(i in dusts.dustmatches) {
                 if(dusts.dustmatches[i].dust === material){
-                    for(j in models.vacuumTypes){
-                        if((models.vacuumTypes[j].model.replace(/-|\s/g,"").toLocaleLowerCase()).includes(cleanedVaccumModel)){
-                            session.send('FAAAAAAAST');
-                            if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
-                                session.send('JAAAAAA');
-                                return;
+                    if(dusts.dustmatches[i].dustclass === 'L'){
+                        session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                        session.send('Ich hoffe ich konnte dir helfen. Frag mich noch was falls ich dir helfen kann :)');
+                    }else{
+                        for(j in models.vacuumTypes){
+                            if((models.vacuumTypes[j].model.replace(/-|\s/g,"").toLocaleLowerCase()).includes(cleanedVaccumModel)){
+                                if(dusts.dustmatches[i].dustclass === 'M' && (models.vacuumTypes[j].model).substring(0,3).includes('H')){
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    session.send('Ich hoffe ich konnte dir helfen. Frag mich noch was falls ich dir helfen kann :)');
+                                    return;
+                                }
+                                else if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    session.send('Ich hoffe ich konnte dir helfen. Frag mich noch was falls ich dir helfen kann :)');
+                                    return;
+                                }
+                                else {
+                                    session.send('Leider kann dieser Absaugmobil nicht ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Wenn du wissen willst welcher Absaugmobile was saugen können, frag mich einfach :)');
+                                    session.send('Ich hoffe ich konnte dir helfen.');
+                                    return;
+                                }
                             }
                         }
                     }
-                    
                 }
             }
+        }else {
+            session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
         }
-    }) 
+    })
 }
 
 bot.dialog('DetailsToVacuum',

@@ -10,10 +10,9 @@ var nodemailer = require('nodemailer');
 var dusts = require('./dusts.json');
 var models = require('./models.json');
 var request = require('request');
-require('dotenv-extended').load();
-var AdaptiveCards = require("adaptivecards");
 var cards = require('./adaptiveCards.json');
-
+require('dotenv-extended').load();
+require('adaptivecards');
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -152,7 +151,6 @@ bot.dialog('HelpDialog',
 
 bot.dialog('findBusinessVacuum',[
     function (session, args, next) {
-        console.log("find business Vacuum");
         var material = session.conversationData.material;
         var volume = session.message.value.volume;
         var ac = session.message.value.ac;
@@ -205,27 +203,6 @@ bot.dialog('SearchForVacuum', [
     matches: 'SearchForVacuum'
 })
 
-function processSubmitAction(session, value) {
-    var defaultErrorMessage = 'Bitte wähle';
-    if(value.mobility){
-        session.endDialog();
-        session.beginDialog('Mobility', value);
-        
-    }
-    else if(value.usecase === 'business'){
-        session.endDialog();
-        session.beginDialog('Business', value);
-    }else if(value.usecase === 'private'){
-        session.endDialog();
-        session.beginDialog('askForMobility', value);
-    } else if (value.help === 'no') {
-        session.beginDialog('None', value);
-    } else if (value.help === 'yes') {
-        session.beginDialog('EndConversation', value);
-    }
-    
-}
-
 bot.dialog('Mobility',[
     (session, next) => {
         if(session.message.value.mobility){
@@ -258,7 +235,6 @@ bot.dialog('Business', [
         builder.Prompts.text(session, 'Mit welchen Stäuben möchtest du arbeiten?');
     },
     (session, results, next) => {
-        console.log(results.response);
             session.conversationData.material = results.response;
             if(session.conversationData.material){
                 session.endDialog();
@@ -273,11 +249,6 @@ bot.dialog('Business', [
     }
 ])
 
-function formSubmitAction(session, value) {
-    session.endDialog();
-    session.beginDialog('findBusinessVacuum', value);
-}
-
 bot.dialog('BusinessForm',[
     function (session, args, next) {
         if (session.message && session.message.value) {
@@ -289,90 +260,13 @@ bot.dialog('BusinessForm',[
         }
    },
    (session, __, next) => {
-        form = {
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "content": {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type": "AdaptiveCard",
-                    "version": "1.0",
-                    "body": [
-                      {
-                        "type": "Container",
-                        "items": [
-                          {
-                            "type": "TextBlock",
-                            "text": "Lass uns herausfinden, welcher Sauger \n sich am besten für dich eignet",
-                            "weight": "bolder",
-                            "size": "medium"
-                          },
-                          {
-                            "type": "TextBlock",
-                            "text": "Wie viel Litervolumen möchtest du haben?",
-                            "weight": "normal",
-                            "size": "small"
-                          },
-                          {
-                            "type":"Input.ChoiceSet",
-                            "id":"volume",
-                            "value":"26",
-                            "choices":[
-                                {
-                                "type":"Input.Choice",
-                                "title":"26",
-                                "value":"26"
-                                },
-                                {
-                                    "type":"Input.Choice",
-                                    "title":"36",
-                                    "value":"36"
-                                },
-                                {
-                                    "type":"Input.Choice",
-                                    "title":"48",
-                                    "value":"48"
-                                }
-                            ]
-                          },
-                          {
-                            "type": "TextBlock",
-                            "text": "Möchtest du eine automatische Abreinigung haben?",
-                            "weight": "normal",
-                            "size": "small"
-                          },
-                          {
-                            "type":"Input.ChoiceSet",
-                            "id":"ac",
-                            "value":"nein",
-                            "choices":[
-                                {
-                                    "type":"Input.Choice",
-                                    "title":"ja",
-                                    "value":"ja"
-                                },
-                                {
-                                    "type":"Input.Choice",
-                                    "title":"nein",
-                                    "value":"nein"
-                                }
-                            ]
-                          }
-                        ]
-                      }
-                    ],
-                    "actions": [
-                      {
-                        "type": "Action.Submit",
-                        "title": "Submit"
-                      }
-                    ]
-                  }
-              }
+        form = cards.findVacuum;
         var msg = new builder.Message(session)
             .addAttachment(form);
         session.send(msg);
         next();
     },(session, results) => {
-        session.send(JSON.stringify(results))
+        console.log(JSON.stringify(results))
     }
 ])
 
@@ -393,79 +287,6 @@ bot.dialog('askForMobility',[
     },
 
 ])
-
-
-function findPrivateVacuum(session, mobility){
-    if (mobility === "mobile"){
-        var vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
-    }else if(mobility === "stationary"){
-        var vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
-    }
-    var attachmentsArray = [];
-    for(j in models.vacuumTypes){
-        if(vacuums.includes(models.vacuumTypes[j].model)){
-            obj = buildHeroCard(j, session);
-            attachmentsArray.push(obj);
-        }
-    }
-    return attachmentsArray;
-}
-
-
-function findVacuumToMaterial(session, material, volume, ac) {
-    for (i in dusts.dustmatches) {
-        materialToUse = material.entity || material;
-        if (dusts.dustmatches[i].dust.toLowerCase() === materialToUse.toLowerCase() ) {
-            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-            var attachmentsArray = [];
-            for (j in models.vacuumTypes) {
-                var ctx = (models.vacuumTypes[j].model).substring(0, 3);
-                var condition = (models.vacuumTypes[j].model).includes(dusts.dustmatches[i].dustclass);
-                if (dusts.dustmatches[i].dustclass === "L") {
-                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("M") || ctx.includes("H");
-                } else if (dusts.dustmatches[i].dustclass === "M") {
-                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("H");
-                } else if (dusts.dustmatches[i].dustclass === "H") {
-                    condition = ctx.includes(dusts.dustmatches[i].dustclass);
-                }
-                if(volume){
-                    condition =+ (models.vacuumTypes[j].model).includes(volume);
-                }
-                if(ac){
-                    condition =+ (models.vacuumTypes[j].model).includes("AC");
-                }
-                console.log(condition);
-                if(condition){
-                    obj = buildHeroCard(j, session);
-                    attachmentsArray.push(obj);
-                }
-            }
-
-        }
-    }
-    return attachmentsArray;
-}
-
-function buildHeroCard(j, session){
-    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
-    var obj =
-        new builder.HeroCard(session)
-            .title("Absaugmobil %s", models.vacuumTypes[j].model)
-            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
-            .buttons([
-                builder.CardAction.openUrl(session, url, "mehr")
-            ])
-        ;
-    return obj;
-}
-
-function showVacuums(attachmentsArray = [], session){
-    console.log("showVacuums" +toString(attachmentsArray));
-    var msg = new builder.Message(session);
-    msg.attachmentLayout(builder.AttachmentLayout.carousel);
-    msg.attachments(attachmentsArray);
-    session.send(msg);
-}
 
 bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
@@ -514,55 +335,53 @@ bot.dialog('MaterialToVacuum', [
     matches: 'MaterialToVacuum'
 })
 
-function checkMaterialToVacuum(session, vacuumModel, material) {
-    var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
-    builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
-        if (entities[0] && entities[0].type === 'VacuumModel') {
-            for (i in dusts.dustmatches) {
-                if (dusts.dustmatches[i].dust === material) {
-                    if (dusts.dustmatches[i].dustclass === 'L') {
-                        session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
-                    } else {
-                        for (j in models.vacuumTypes) {
-                            if ((models.vacuumTypes[j].model.replace(/-|\s/g, "").toLocaleLowerCase()).includes(cleanedVaccumModel)) {
-                                if (dusts.dustmatches[i].dustclass === 'M' && (models.vacuumTypes[j].model).substring(0, 3).includes('H')) {
-                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
-                                    return;
-                                }
-                                else if ((models.vacuumTypes[j].model).substring(0, 3).includes(dusts.dustmatches[i].dustclass)) {
-                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
-                                    return;
-                                }
-                                else {
-                                    session.send('Leider kann dieser Absaugmobil nicht ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Wenn du wissen willst welcher Absaugmobile was saugen können, frag mich einfach :)');
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
-        }
-    })
-}
-
-bot.dialog('DetailsToVacuum',
+bot.dialog('DetailsToVacuum',[
     (session) => {
-        session.send('You reached the DetailsToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    url = {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "actions": [
+                {
+                    "type": "Action.OpenUrl",
+                    "title": "Details zu den Produkten findest du auf unserer Homepage",
+                    "url": "https://www.festool.de/produkte/saugen"
+                }
+            ]
+        }
     }
-).triggerAction({
+    var msg = new builder.Message(session)
+        .addAttachment(url);
+    session.send(msg);
+    next();
+    },(session, results) => {
+        session.send(JSON.stringify(results));
+    }
+]).triggerAction({
     matches: 'DetailsToVacuum'
 })
 
-bot.dialog('AccessoryToVacuum',
+bot.dialog('AccessoryToVacuum',[
     (session) => {
-        session.send('You reached the AccessoryToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    url = {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "actions": [
+                {
+                    "type": "Action.OpenUrl",
+                    "title": "passendes Zubehör zu den Produkten findest du auf unserer Homepage",
+                    "url": "https://www.festool.de/produkte/saugen"
+                }
+            ]
+        }
     }
-).triggerAction({
+    var msg = new builder.Message(session)
+        .addAttachment(url);
+    session.send(msg);
+    next();
+    },(session, results) => {
+        session.send(JSON.stringify(results));
+    }
+]).triggerAction({
     matches: 'AccessoryToVacuum'
 })
 
@@ -608,3 +427,134 @@ intents.matches('qna', [
         session.send(answerEntity.entity);
     }
 ]);
+
+
+function processSubmitAction(session, value) {
+    var defaultErrorMessage = 'Bitte wähle';
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+        
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
+        session.beginDialog('Business', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
+    } else if (value.help === 'no') {
+        session.beginDialog('None', value);
+    } else if (value.help === 'yes') {
+        session.beginDialog('EndConversation', value);
+    }
+    
+}
+
+function formSubmitAction(session, value) {
+    session.endDialog();
+    session.beginDialog('findBusinessVacuum', value);
+}
+
+function findPrivateVacuum(session, mobility){
+    if (mobility === "mobile"){
+        var vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
+    }else if(mobility === "stationary"){
+        var vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
+    }
+    var attachmentsArray = [];
+    for(j in models.vacuumTypes){
+        if(vacuums.includes(models.vacuumTypes[j].model)){
+            obj = buildHeroCard(j, session);
+            attachmentsArray.push(obj);
+        }
+    }
+    return attachmentsArray;
+}
+
+
+function findVacuumToMaterial(session, material, volume, ac) {
+    for (i in dusts.dustmatches) {
+        materialToUse = material.entity || material;
+        if (dusts.dustmatches[i].dust.toLowerCase() === materialToUse.toLowerCase() ) {
+            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            var attachmentsArray = [];
+            for (j in models.vacuumTypes) {
+                var ctx = (models.vacuumTypes[j].model).substring(0, 3);
+                var condition = (models.vacuumTypes[j].model).includes(dusts.dustmatches[i].dustclass);
+                if (dusts.dustmatches[i].dustclass === "L") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("M") || ctx.includes("H");
+                } else if (dusts.dustmatches[i].dustclass === "M") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("H");
+                } else if (dusts.dustmatches[i].dustclass === "H") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass);
+                }
+                if(volume){
+                    condition =+ (models.vacuumTypes[j].model).includes(volume);
+                }
+                if(ac){
+                    condition =+ (models.vacuumTypes[j].model).includes("AC");
+                }
+                if(condition){
+                    obj = buildHeroCard(j, session);
+                    attachmentsArray.push(obj);
+                }
+            }
+
+        }
+    }
+    return attachmentsArray;
+}
+
+function buildHeroCard(j, session){
+    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+    var obj =
+        new builder.HeroCard(session)
+            .title("Absaugmobil %s", models.vacuumTypes[j].model)
+            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
+            .buttons([
+                builder.CardAction.openUrl(session, url, "mehr")
+            ])
+        ;
+    return obj;
+}
+
+function showVacuums(attachmentsArray = [], session){
+    var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel);
+    msg.attachments(attachmentsArray);
+    session.send(msg);
+}
+
+function checkMaterialToVacuum(session, vacuumModel, material) {
+    var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
+    builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
+        if (entities[0] && entities[0].type === 'VacuumModel') {
+            for (i in dusts.dustmatches) {
+                if (dusts.dustmatches[i].dust === material) {
+                    if (dusts.dustmatches[i].dustclass === 'L') {
+                        session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                    } else {
+                        for (j in models.vacuumTypes) {
+                            if ((models.vacuumTypes[j].model.replace(/-|\s/g, "").toLocaleLowerCase()).includes(cleanedVaccumModel)) {
+                                if (dusts.dustmatches[i].dustclass === 'M' && (models.vacuumTypes[j].model).substring(0, 3).includes('H')) {
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    return;
+                                }
+                                else if ((models.vacuumTypes[j].model).substring(0, 3).includes(dusts.dustmatches[i].dustclass)) {
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    return;
+                                }
+                                else {
+                                    session.send('Leider kann dieser Absaugmobil nicht ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Wenn du wissen willst welcher Absaugmobile was saugen können, frag mich einfach :)');
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
+        }
+    })
+}

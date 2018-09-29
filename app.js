@@ -157,9 +157,9 @@ bot.dialog('SearchForVacuum', [
             processSubmitAction(session, session.message.value);
             return;
         }
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
-        if (material) {
-            showVacuums(findVacuumToMaterial(session, material));
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            showVacuums(findVacuumToMaterial(session, material),session);
         } else {
             next();
         }
@@ -181,32 +181,35 @@ bot.dialog('SearchForVacuum', [
 
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Bitte wähle';
-    if (value.usecase === 'business') {
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+        
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
         session.beginDialog('Business', value);
-    } else if (value.usecase === 'private' || value.mobility) {
-        session.beginDialog('Private', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
     } else if (value.help === 'no') {
         session.beginDialog('None', value);
     } else if (value.help === 'yes') {
         session.beginDialog('EndConversation', value);
     }
+    
 }
 
-bot.dialog('Private', [
+bot.dialog('Mobility',[
     (session) => {
         if (session.message.value.mobility) {
             var mobility = session.message.value.mobility;
-            if (mobility === "mobile") {
-                showVacuums(findPrivateVacuum());
-                session.endDialog;
+            if(mobility === "mobile"){
+                showVacuums(findPrivateVacuum(session),session);
+            }else if (mobility === "stationary"){
+                showVacuums(findPrivateVacuum(session),session);
             }
-
         }
-        else if (session.message.value.usecase) {
-            console.log(session.message.value.usecase);
-            session.beginDialog('askForMobility', session.message.value.usecase);
-        }
-
     }
 ])
 
@@ -225,11 +228,10 @@ bot.dialog('Business', [
     }
 ])
 
-bot.dialog('askForMobility', [
-    function (session, args, next) {
+bot.dialog('askForMobility',[
+    function (session, args, next) { 
         if (session.message && session.message.value && session.message.value.mobility) {
             // A Card's Submit Action obj was received
-            console.log(session.message.value);
             processSubmitAction(session, session.message.value);
             return;
         }
@@ -241,20 +243,22 @@ bot.dialog('askForMobility', [
         var msg = new builder.Message(session)
             .addAttachment(choicebox);
         session.send(msg);
-        next();
     },
-    (session) => {
 
-    }
 ])
 
 
-function findPrivateVacuum() {
-    var vacuums = ["CTL Midi", "CTL 26 E", "CTL SYS", "CTL Mini", "CTL 26 EAC", "CTL 26 E AC HD"];
+function findPrivateVacuum(session, mobility){
+    var vacuums = [];
+    if (mobility === "mobile"){
+        vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
+    }else if(mobility === "stationary"){
+        vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
+    }
     var attachmentsArray = [];
-    for (j in models.vacuumTypes) {
-        if (vacuums.includes(models.vacuumTypes[j].model)) {
-            obj = buildHeroCard(j);
+    for(j in models.vacuumTypes){
+        if(vacuums.includes(models.vacuumTypes[j].model)){
+            obj = buildHeroCard(j, session);
             attachmentsArray.push(obj);
         }
     }
@@ -277,8 +281,8 @@ function findVacuumToMaterial(session, material, usecase, volume) {
                 } else if (dusts.dustmatches[i].dustclass === "H") {
                     condition = ctx.includes(dusts.dustmatches[i].dustclass);
                 }
-                if (condition) {
-                    obj = buildHeroCard(j);
+                if(condition){
+                    obj = buildHeroCard(j, session);
                     attachmentsArray.push(obj);
                 }
             }
@@ -288,7 +292,7 @@ function findVacuumToMaterial(session, material, usecase, volume) {
     return attachmentsArray;
 }
 
-function buildHeroCard(j) {
+function buildHeroCard(j, session){
     var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
     var obj =
         new builder.HeroCard(session)
@@ -301,11 +305,12 @@ function buildHeroCard(j) {
     return obj;
 }
 
-function showVacuums(attachmentsArray = []) {
+function showVacuums(attachmentsArray = [], session){
     var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel);
     msg.attachments(attachmentsArray);
     session.send(msg).endDialog();
+    console.log("now end Conversation");
 }
 
 bot.dialog('MaterialToVacuum', [

@@ -236,6 +236,8 @@ bot.dialog('Mobility',[
             var mobility = session.message.value.mobility;
             if(mobility === "mobile"){
                 showVacuums(findPrivateVacuum(session),session);
+            }else if (mobility === "stationary"){
+                showVacuums(findPrivateVacuum(session),session);
             }
         }
     }
@@ -304,8 +306,13 @@ bot.dialog('askForMobility',[
 ])
 
 
-function findPrivateVacuum(session){
-    var vacuums = ["CTL Midi","CTL 26 E","CTL SYS", "CTL Mini", "CTL 26 EAC", "CTL 26 E AC HD"];
+function findPrivateVacuum(session, mobility){
+    var vacuums = [];
+    if (mobility === "mobile"){
+        vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
+    }else if(mobility === "stationary"){
+        vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
+    }
     var attachmentsArray = [];
     for(j in models.vacuumTypes){
         if(vacuums.includes(models.vacuumTypes[j].model)){

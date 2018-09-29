@@ -1,0 +1,191 @@
+{
+    "mobility": {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Wie willst du ihn verwenden?",
+                            "weight": "bolder",
+                            "size": "medium"
+                        }
+                    ]
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Mobil",
+                    "data": {
+                        "mobility": "mobile"
+                    }
+                },
+                {
+                    "type": "Action.Submit",
+                    "title": "Stationär",
+                    "data": {
+                        "mobility": "stationary"
+                    }
+                }
+            ]
+        }
+    },
+    "privateBusiness": {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Für was benötigst du deinen Sauger?",
+                            "weight": "bolder",
+                            "size": "medium"
+                        }
+                    ]
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Privat",
+                    "data": {
+                        "usecase": "private"
+                    }
+                },
+                {
+                    "type": "Action.Submit",
+                    "title": "Geschäftlich",
+                    "data": {
+                        "usecase": "business"
+                    }
+                }
+            ]
+        }
+    },
+    "findVacuum" : {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+              {
+                "type": "Container",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Lass uns herausfinden, welcher Sauger \n sich am besten für dich eignet",
+                    "weight": "bolder",
+                    "size": "medium"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Wie viel Litervolumen möchtest du haben?",
+                    "weight": "normal",
+                    "size": "small"
+                  },
+                  {
+                    "type":"Input.ChoiceSet",
+                    "id":"volume",
+                    "value":"26",
+                    "choices":[
+                        {
+                        "type":"Input.Choice",
+                        "title":"26",
+                        "value":"26"
+                        },
+                        {
+                            "type":"Input.Choice",
+                            "title":"36",
+                            "value":"36"
+                        },
+                        {
+                            "type":"Input.Choice",
+                            "title":"48",
+                            "value":"48"
+                        }
+                    ]
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Möchtest du eine automatische Abreinigung haben?",
+                    "weight": "normal",
+                    "size": "small"
+                  },
+                  {
+                    "type":"Input.ChoiceSet",
+                    "id":"ac",
+                    "value":"nein",
+                    "choices":[
+                        {
+                            "type":"Input.Choice",
+                            "title":"ja",
+                            "value":"ja"
+                        },
+                        {
+                            "type":"Input.Choice",
+                            "title":"nein",
+                            "value":"nein"
+                        }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Submit"
+                }
+            ]
+        }
+    },
+    "endConversation": {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "War ich hilfreich?",
+                            "weight": "bolder",
+                            "size": "medium"
+                        }
+                    ]
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Ja",
+                    "data": {
+                        "help": "yes"
+                    }
+                },
+                {
+                    "type": "Action.Submit",
+                    "title": "Nein",
+                    "data": {
+                        "help": "no"
+                    }
+                }
+            ]
+        }
+    }
+}

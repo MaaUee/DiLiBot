@@ -159,12 +159,12 @@ bot.dialog('SearchForVacuum',[
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
             showVacuums(findVacuumToMaterial(session, material),session);
+            session.endDialog();
         } else {
            next();
         }
    },
    (session, __, next) => {
-        //builder.Prompts.choice(session, "Für was benötigst du deinen Sauger? \n", ["Privat", "Gewerblich"],{ listStyle: builder.ListStyle.button }); 
         choicebox = {
                 "contentType": "application/vnd.microsoft.card.adaptive",
                 "content": {
@@ -231,24 +231,126 @@ function processSubmitAction(session, value) {
 }
 
 bot.dialog('Mobility',[
-    (session) => {
+    (session, next) => {
         if(session.message.value.mobility){
             var mobility = session.message.value.mobility;
             if(mobility === "mobile"){
-                showVacuums(findPrivateVacuum(session),session);
+                showVacuums(findPrivateVacuum(session,mobility),session);
             }else if (mobility === "stationary"){
-                showVacuums(findPrivateVacuum(session),session);
+                showVacuums(findPrivateVacuum(session,mobility),session);
             }
+
         }
+    },    
+    (session) => {
+        choicebox = cards.endConversation;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+            setTimeout (()=>{session.send(msg);},3000);
     }
 ])  
 
 bot.dialog('Business',[
     (session) => {
-        session.send('You reached the Business intent. You said \'%s\'.', session.message.value.usecase);
+        session.send('Mit welchen Stäuben möchtest du arbeiten?');
+    },
+    (session, results, next) => {
+        //TODO unterscheiden von prompt oder nicht prompt daten
+        console.log(results.response);
+            session.conversationData.material = results.response;
+            if(material){
+                session.endDialog();
+                session.beginDialog('BusinessForm');
+            }else{
+                session.endDialog();
+                session.beginDialog('Business');
+            }
+    },
+    (session) => {
         session.endDialog();
     }
 ])  
+
+function formSubmitAction(session, value) {
+    switch (value) {
+        case value:
+            
+            break;
+    
+        default:
+            break;
+    }
+}
+
+bot.dialog('BusinessForm',[
+    function (session, args, next) {
+        if (session.message && session.message.value) {
+            // A Card's Submit Action obj was received
+            formSubmitAction(session, session.message.value);
+            return;
+        }
+        else {
+           next();
+        }
+   },
+   /*Bot: Wie viel Litervolumen möchtest du haben? ​
+Auswahl: 26 , 36 oder 48 ?​
+
+Bot: Möchtest du eine automatische Abreinigung haben? ​
+Auswahl: ja oder nein​*/
+   (session, __, next) => {
+        form = {
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.0",
+                    "body": [
+                      {
+                        "type": "Container",
+                        "items": [
+                          {
+                            "type": "TextBlock",
+                            "text": "Lass uns herausfinden, welcher Sauger sich am besten für dich eignet",
+                            "weight": "bolder",
+                            "size": "medium"
+                          },
+                          {
+                            "type": "TextBlock",
+                            "text": "Du möchtest folgende Stäube saugen können: ${session.conversationData.material}",
+                            "weight": "normal",
+                            "size": "small"
+                          }
+                        ]
+                      }
+                    ],
+                    "actions": [
+                      {
+                        "type": "Action.Submit",
+                        "title": "Privat",
+                        "data":{
+                            "usecase":"private"
+                        }
+                      },
+                      {
+                        "type": "Action.Submit",
+                        "title": "Geschäftlich",
+                        "data":{
+                            "usecase":"business"
+                        }
+                      }
+                    ]
+                  }
+              }
+        var msg = new builder.Message(session)
+            .addAttachment(form);
+        session.send(msg);
+        next();
+    },
+    (session) => {
+
+    }
+])
 
 bot.dialog('askForMobility',[
     function (session, args, next) { 
@@ -307,11 +409,10 @@ bot.dialog('askForMobility',[
 
 
 function findPrivateVacuum(session, mobility){
-    var vacuums = [];
     if (mobility === "mobile"){
-        vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
+        var vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
     }else if(mobility === "stationary"){
-        vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
+        var vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
     }
     var attachmentsArray = [];
     for(j in models.vacuumTypes){
@@ -367,8 +468,7 @@ function showVacuums(attachmentsArray = [], session){
     var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel);
     msg.attachments(attachmentsArray);
-    session.send(msg).endDialog();
-    console.log("now end Conversation");
+    session.send(msg);
 }
 
 bot.dialog('MaterialToVacuum', [

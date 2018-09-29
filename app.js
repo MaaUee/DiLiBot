@@ -153,7 +153,6 @@ bot.dialog('SearchForVacuum',[
     function (session, args, next) {
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            session.send('HI!!!');
             findVacuumToMaterial(session, material);
         } else {
            next();
@@ -161,21 +160,44 @@ bot.dialog('SearchForVacuum',[
    },
    function (session) {
         //builder.Prompts.choice(session, "Für was benötigst du deinen Sauger? \n", ["Privat", "Gewerblich"],{ listStyle: builder.ListStyle.button }); 
-
         choicebox = {
-            "type": "Input.ChoiceSet",
-            "id": "privObuss",
-            "choices": [
-                {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [
+                    {
+                        "type": "Container",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Für was benötigst du deinen Sauger?",
+                                "weight": "bolder",
+                                "size": "medium"
+                            }
+                        ]
+                    }
+                ],
+                "actions": [
+                  {
+                    "type": "Action.Submit",
                     "title": "Privat",
-                    "value": "privat"
-                },
-                {
-                    "title": "Gewerblich",
-                    "value": "gewerblich"
-                }
-            ]
+                    "data":{
+                        "forUse":"private" 
+                    }
+                  },
+                  {
+                    "type": "Action.Submit",
+                    "title": "Geschäftlich",
+                    "data":{
+                        "forUse":"business" 
+                    }
+                  }
+                ]
+              
         }
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
     },
     function (session, args) {
         session.send( args.response +'is added to the basket');

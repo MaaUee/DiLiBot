@@ -210,11 +210,11 @@ bot.dialog('MaterialToVacuum', [
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
         var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
-        var materialEntity = material.entity;
 
         if (vaccumModel && material) {
-            session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
-            session.send('Your Material is: ' + material.entity);
+            console.log('DETECTED BOTH');
+            session.send('Du suchst nach dem Sauger: ' + vaccumModel.entity);
+            session.send('Dein Material ist: ' + material.entity);
             next({
                 response: {
                     vaccumModel: vaccumModel.entity,
@@ -223,33 +223,51 @@ bot.dialog('MaterialToVacuum', [
             });
         }
         else if (material && !vaccumModel) {
-            // no entities detected, ask user for a destination
+            console.log('DETECTED JUST ONE!');
+            // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Please enter your Vaccum Model');
+            builder.Prompts.text(session, 'Bitte gib das Modell deines Sauger ein: ');
         }
-
-        session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
 
     }, (session, results) => {
         //TODO unterscheiden von prompt oder nicht prompt daten
             var vacuumModel = results.response.vaccumModel || results.response;
             var material = results.response.material || session.conversationData.material;
-            session.send('Your Model: ' + vacuumModel + 'And your Material: ' + material);
-            dusts.dustmatches.forEach((dustType) => {
-                if(dustType.dust === material){
-                    session.send('Alle Sauger mit Klasse ' + dustType.dustclass + ' und höher können ' + material + 'saugen');
-                    models.vacuumTypes.forEach((vacuum) => {
-                        if((vacuum.model).includes(vacuumModel) && (vacuum.model).includes(dustType.dustclass)){
-                            session.send('Ihr Staubsauger: ' + vacuumModel + 'kann ' + material + 'saugen!');
-                        }
-                    });
-                }
-            });
+            var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g,"");
+
+            if (vacuumModel) {
+                checkMaterialToVacuum(session, vacuumModel, material);
+            } else {
+                session.send('Ich verstehe dein Model nicht!');
+            }
             session.endDialog();
     }
 ]).triggerAction({
     matches: 'MaterialToVacuum'
 })
+
+function checkMaterialToVacuum(session, vacuumModel, material){
+    var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g,"");
+    builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
+        if (entities[0].type === 'VacuumModel') {
+            session.send('Your Model: ' + vacuumModel + ' And your Material: ' + material);
+            for(i in dusts.dustmatches) {
+                if(dusts.dustmatches[i].dust === material){
+                    for(j in models.vacuumTypes){
+                        if((models.vacuumTypes[j].model.replace(/-|\s/g,"").toLocaleLowerCase()).includes(cleanedVaccumModel)){
+                            session.send('FAAAAAAAST');
+                            if((models.vacuumTypes[j].model).substring(0,3).includes(dusts.dustmatches[i].dustclass)){
+                                session.send('JAAAAAA');
+                                return;
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }) 
+}
 
 bot.dialog('DetailsToVacuum',
     (session) => {

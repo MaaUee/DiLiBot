@@ -151,6 +151,11 @@ bot.dialog('HelpDialog',
 
 bot.dialog('SearchForVacuum',[
     function (session, args, next) {
+        if (session.message && session.message.value) {
+            // A Card's Submit Action obj was received
+            processSubmitAction(session, session.message.value);
+            return;
+        }
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
             findVacuumToMaterial(session, material);
@@ -201,15 +206,27 @@ bot.dialog('SearchForVacuum',[
             .addAttachment(choicebox);
         session.send(msg);
         next();
-
     },
     (session) => {
-        const { value } = session.message;
-        console.log(value);
+
     }
 ]).triggerAction({
    matches: 'SearchForVacuum'
 })
+
+function processSubmitAction(session, value) {
+    var defaultErrorMessage = 'Bitte wähle';
+    session.beginDialog('searchVacuum2', value);
+    console.log(value);
+}
+// A form data was received, invalid or incomplete since the previous validation did not pass
+    
+
+bot.dialog('searchVacuum2',[
+    (session) => {
+        session.send('GING!' + session.message.value.usecase);
+    }
+])    
 
 function findVacuumToMaterial(session, material){
     for(i in dusts.dustmatches) {

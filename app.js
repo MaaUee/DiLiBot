@@ -158,7 +158,7 @@ bot.dialog('SearchForVacuum',[
         }
         var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
-            findVacuumToMaterial(session, material);
+            showVacuums(findVacuumToMaterial(session, material));
         } else {
            next();
         }
@@ -216,24 +216,115 @@ bot.dialog('SearchForVacuum',[
 
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Bitte wähle';
-    session.beginDialog('searchVacuum2', value);
-    console.log(value);
-}
-// A form data was received, invalid or incomplete since the previous validation did not pass
-    
-
-bot.dialog('searchVacuum2',[
-    (session) => {
-        session.send('GING!' + session.message.value.usecase);
+    if(value.usecase === 'business'){
+        session.beginDialog('Business', value);
+    }else if(value.usecase === 'private' || value.mobility){
+        session.beginDialog('Private', value);
     }
-])    
+}
 
-function findVacuumToMaterial(session, material){
+bot.dialog('Private',[
+    (session) => {
+        if(session.message.value.mobility){
+            var mobility = session.message.value.mobility;
+            if(mobility === "mobile"){
+               showVacuums(findPrivateVacuum());
+                session.endDialog;
+            }
+            
+        }
+        else if(session.message.value.usecase){
+            console.log(session.message.value.usecase);
+            session.beginDialog('askForMobility', session.message.value.usecase);
+        }
+        
+    }
+])  
+
+bot.dialog('Business',[
+    (session) => {
+        session.send('You reached the Business intent. You said \'%s\'.', session.message.value.usecase);
+        session.endDialog();
+    }
+])  
+
+bot.dialog('askForMobility',[
+    function (session, args, next) {
+        if (session.message && session.message.value && session.message.value.mobility) {
+            // A Card's Submit Action obj was received
+            console.log(session.message.value);
+            processSubmitAction(session, session.message.value);
+            return;
+        }
+        next();
+   },
+   (session, __, next) => {
+        //builder.Prompts.choice(session, "Für was benötigst du deinen Sauger? \n", ["Privat", "Gewerblich"],{ listStyle: builder.ListStyle.button }); 
+        choicebox = {
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.0",
+                    "body": [
+                      {
+                        "type": "Container",
+                        "items": [
+                          {
+                            "type": "TextBlock",
+                            "text": "Wie willst du ihn verwenden?",
+                            "weight": "bolder",
+                            "size": "medium"
+                          }
+                        ]
+                      }
+                    ],
+                    "actions": [
+                      {
+                        "type": "Action.Submit",
+                        "title": "Mobil",
+                        "data":{
+                            "mobility":"mobile"
+                        }
+                      },
+                      {
+                        "type": "Action.Submit",
+                        "title": "Stationär",
+                        "data":{
+                            "mobility":"stationary"
+                        }
+                      }
+                    ]
+                  }
+              }
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        next();
+    },
+    (session) => {
+
+    }
+])
+
+
+function findPrivateVacuum(){
+    var vacuums = ["CTL Midi","CTL 26 E","CTL SYS", "CTL Mini", "CTL 26 EAC", "CTL 26 E AC HD"];
+    var attachmentsArray = [];
+    for(j in models.vacuumTypes){
+        if(vacuums.includes(models.vacuumTypes[j].model)){
+            obj = buildHeroCard(j);
+            attachmentsArray.push(obj);
+        }
+    }
+    return attachmentsArray;
+}
+
+
+function findVacuumToMaterial(session, material, usecase, volume){
     for(i in dusts.dustmatches) {
         if(dusts.dustmatches[i].dust === material.entity){
             session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
-            var msg = new builder.Message(session);
-            msg.attachmentLayout(builder.AttachmentLayout.carousel);
             var attachmentsArray = [];
             for(j in models.vacuumTypes){
                 var ctx= (models.vacuumTypes[j].model).substring(0,3);
@@ -246,21 +337,33 @@ function findVacuumToMaterial(session, material){
                     condition = ctx.includes(dusts.dustmatches[i].dustclass);
                 }
                 if(condition){
-                    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
-                    var obj = 
-                        new builder.HeroCard(session)
-                            .title("Absaugmobil %s",models.vacuumTypes[j].model)
-                            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
-                            .buttons([
-                                builder.CardAction.openUrl(session, url, "mehr")
-                            ])
-                    ;
+                    obj = buildHeroCard(j);
                     attachmentsArray.push(obj);
                 }
             }
-            msg.attachments(attachmentsArray);
+            
         }
     }
+    return attachmentsArray;
+}
+
+function buildHeroCard(j){
+    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+    var obj = 
+        new builder.HeroCard(session)
+            .title("Absaugmobil %s",models.vacuumTypes[j].model)
+            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
+            .buttons([
+                builder.CardAction.openUrl(session, url, "mehr")
+            ])
+    ;
+    return obj;
+}
+
+function showVacuums(attachmentsArray = []){
+    var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel);
+    msg.attachments(attachmentsArray);
     session.send(msg).endDialog();
 }
 

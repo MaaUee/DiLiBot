@@ -137,6 +137,9 @@ bot.on('conversationUpdate', (session, activity, message) => {
     }
 })
 
+/*
+* Wenn der Benutzer Begrüßungen eingibt 
+*/
 bot.dialog('GreetingDialog',
     (session) => {
         session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
@@ -146,12 +149,15 @@ bot.dialog('GreetingDialog',
     matches: 'Greeting'
 })
 
+/*
+* Falls der Benutzer nich weiß, wie DeliBot benutzt werden kann
+*/
 bot.dialog('HelpDialog',
     (session) => {
         session.send('Hallo, ich bin DiLiBot, ich kann dich auf der Suche nach einem Absaugmobil beraten, oder dir Fragen zu deinem Modell beantworten', session.message.text);
         session.endDialog();
     } ,(session, __, next) => {
-        choicebox = cards.privateBusiness;
+        choicebox = cards.endConversation;
         var msg = new builder.Message(session)
             .addAttachment(choicebox);
         session.send(msg);
@@ -164,38 +170,18 @@ bot.dialog('HelpDialog',
     matches: 'Help'
 })
 
-bot.dialog('findBusinessVacuum',[
-    function (session, args, next) {
-        var material = session.conversationData.material;
-        var volume = session.message.value.volume;
-        var ac = session.message.value.ac;
-        if(material) {
-            showVacuums(findVacuumToMaterial(session, material, volume, ac),session);
-            session.endDialog();
-            session.endConversation();
-        } else {
-            next();
-        }
-   },
-   (session, __, next) => {
-        choicebox = cards.privateBusiness;
-        var msg = new builder.Message(session)
-            .addAttachment(choicebox);
-        session.send(msg);
-        next();
-    },    
-    (session) => {
-
-    }
-])
-
+/*
+* Der Benutzer Hat die Intension, einen Sauger zu einem Anwendungsszenario zu finden. 
+* z.B. "Ich möchte einen Sauger kaufen" oder "Welcher Sauger kann Holz saugen?"
+*/
 bot.dialog('SearchForVacuum', [
     function (session, args, next) {
+        //checkt ob etwas augewählt wurde
         if (session.message && session.message.value) {
-            // A Card's Submit Action obj was received
             processSubmitAction(session, session.message.value);
             return;
         }
+        //Material wurde bereits angegeben oder wird im laufe des Dialogs erfragt
         var material = session.conversationData.material || builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
             session.conversationData.material = material;
@@ -219,61 +205,34 @@ bot.dialog('SearchForVacuum', [
     matches: 'SearchForVacuum'
 })
 
-/* optional Show case */
-function ImageSubmitAction(session, value){
-    session.endDialog();
-    session.beginDialog('sendImage', value);
-}
-
-function processSubmitAction(session, value) {
-    var defaultErrorMessage = 'Bitte wähle';
-    if(value.mobility){
-        session.endDialog();
-        session.beginDialog('Mobility', value);
-    }
-    else if(value.usecase === 'business'){
-        session.endDialog();
-        session.beginDialog('Business', value);
-    }else if(value.usecase === 'private'){
-        session.endDialog();
-        session.beginDialog('askForMobility', value);
-    } else if (value.help === 'no') {
-        //Falls wir keine Hilfe waren wird das NONE dialog geöffnet und dem Kunden erlaubt eine mail zu schreiben
-        session.beginDialog('None', value);
-    } else if (value.help === 'yes') {
-        session.beginDialog('EndConversation', value);
-    } 
-    
-}
-
-bot.dialog('Mobility',[
-    (session, next) => {
-        if(session.message.value.mobility){
-            var mobility = session.message.value.mobility;
-            if(mobility === "mobile"){
-                showVacuums(findPrivateVacuum(session,mobility),session);
-            }else if (mobility === "stationary"){
-                showVacuums(findPrivateVacuum(session,mobility),session);
-            }
+/*
+* 
+*/
+bot.dialog('BusinessForm',[
+    function (session, args, next) {
+        if (session.message && session.message.value && session.message.value.volume) {
+            formSubmitAction(session, session.message.value);
+            return;
         }
-    },    
-    (session) => {
-        choicebox = cards.endConversation;
+        else {
+           next();
+        }
+   },
+   (session, __, next) => {
+        form = cards.findVacuum;
         var msg = new builder.Message(session)
-            .addAttachment(choicebox);
-            setTimeout (()=>{session.send(msg);},3000);
+            .addAttachment(form);
+        session.send(msg);
+        next();
+    },(session, results) => {
+        console.log(JSON.stringify(results))
     }
 ])
 
-//Dialog um Konversation abzuschließen
-bot.dialog('EndConversation', [
-    (session) => {
-        session.send('Cool das freut mich! Danke dir.');
-        session.send('Frag mich was falls ich noch helfen darf.');
-        session.endConversation();
-    }
-])
-
+/*
+* Wenn kein Material angegeben wurde, wird es hier Erfragt. 
+* Zur Sicherheit kann der Benutzer dann unter allen gefundenen vorschlägen Stäube auswählen (findMaterial)
+*/
 bot.dialog('Business', [
     (session) => {
         builder.Prompts.text(session, 'Mit welchen Stäuben möchtest du arbeiten?');
@@ -301,20 +260,10 @@ bot.dialog('Business', [
     }
 ])
 
-function findMaterial(session){
-    var materials = [];
-    var dust;
-    material = session.conversationData.material.toLowerCase();
-    material = material.replace(/\,/g," ");
-    for(i in dusts.dustmatches){
-        dust = dusts.dustmatches[i].dust.toLowerCase();
-        if(dust.includes(material) || material.includes(dust)){
-            materials.push(dusts.dustmatches[i].dust);
-        }
-    }
-    return materials;
-}
-
+/*
+* Die vom Benutzer angegebenen Materialien werden überprüft und als Auswahlliste ausgegeben, 
+* So kann beispielsweiße zwischen verschiedenen Holzarten unterschieden werden
+*/
 bot.dialog('findMaterial',[
     (session, results, next) => {
         if (session.message && session.message.value) {
@@ -380,27 +329,40 @@ bot.dialog('findMaterial',[
 
 ])
 
-bot.dialog('BusinessForm',[
+
+/*
+* Wenn im SearchForVacuum Dialog die Option Business gewählt wurde.
+* Beachtet alle im Laufe des Dialogs eingegebenen Optionen, sucht dann nach passenden Modellen und gibt diese aus
+*/
+bot.dialog('findBusinessVacuum',[
     function (session, args, next) {
-        if (session.message && session.message.value && session.message.value.volume) {
-            formSubmitAction(session, session.message.value);
-            return;
-        }
-        else {
-           next();
+        //Angaben, die im laufe das Dialogs gemacht wurden
+        var material = session.conversationData.material;
+        var volume = session.message.value.volume;
+        var ac = session.message.value.ac;
+        if(material) {
+            showVacuums(findVacuumToMaterial(session, material, volume, ac),session);
+            session.endDialog();
+            session.endConversation();
+        } else {
+            next();
         }
    },
    (session, __, next) => {
-        form = cards.findVacuum;
+        choicebox = cards.privateBusiness;
         var msg = new builder.Message(session)
-            .addAttachment(form);
+            .addAttachment(choicebox);
         session.send(msg);
         next();
-    },(session, results) => {
-        console.log(JSON.stringify(results))
+    },    
+    (session) => {
+
     }
 ])
 
+/*
+* Wenn im SearchForVacuum Dialog die Option Private gewählt wurde.
+*/
 bot.dialog('askForMobility',[
     function (session, args, next) { 
         if (session.message && session.message.value && session.message.value.mobility) {
@@ -418,7 +380,39 @@ bot.dialog('askForMobility',[
     },
 
 ])
-/*optional showcase scenario
+
+/*
+* Je nach dem, ob Der Benutzer Mobil oder Stationäre Nutzung wählt, werden vorgegebene Modelle ausgegeben
+*/
+bot.dialog('Mobility',[
+    (session, next) => {
+        if(session.message.value.mobility){
+            var mobility = session.message.value.mobility;
+            if(mobility === "mobile"){
+                showVacuums(findPrivateVacuum(session,mobility),session);
+            }else if (mobility === "stationary"){
+                showVacuums(findPrivateVacuum(session,mobility),session);
+            }
+        }
+    },    
+    (session) => {
+        choicebox = cards.endConversation;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+            setTimeout (()=>{session.send(msg);},3000);
+    }
+])
+
+//Dialog um Konversation abzuschließen
+bot.dialog('EndConversation', [
+    (session) => {
+        session.send('Cool das freut mich! Danke dir.');
+        session.send('Frag mich was falls ich noch helfen darf.');
+        session.endConversation();
+    }
+])
+
+/* Optionales Showcase Szenario
 // Dieser Dialog erkennt Bilder und gibt den namen als Text raus
 bot.dialog('SendImage',[
     function (session) { 
@@ -457,6 +451,9 @@ bot.dialog('SendImage',[
 
 ])*/
 
+/*
+* Wenn der Benutzer z.B. fragt "Kann ich mit meinem Sauger Holz saugen?"
+*/
 bot.dialog('MaterialToVacuum', [
     //STEP 1
     (session, args, next) => {
@@ -520,6 +517,7 @@ bot.dialog('MaterialToVacuum', [
     matches: 'MaterialToVacuum'
 })
 
+/*Wenn der benutzer nach Produktdetails fragt */
 bot.dialog('DetailsToVacuum',[
     (session) => {
     url = {
@@ -545,6 +543,7 @@ bot.dialog('DetailsToVacuum',[
     matches: 'DetailsToVacuum'
 })
 
+/*Wenn der Benutzer nach Verbrauchsmaterial oder Zubehör fragt */
 bot.dialog('AccessoryToVacuum',[
     (session) => {
     url = {
@@ -570,8 +569,8 @@ bot.dialog('AccessoryToVacuum',[
     matches: 'AccessoryToVacuum'
 })
 
+/* Wenn keine Intension erkannt wird */
 bot.dialog('None', [
-    //Hier sollten wir versuchen noch Ein Text einzubinden ist aber nicht wirklich notwendig. Jetzt wird nur die Email weitergegeben
     (session) => {
         session.conversationData.question = session.message.text;
         builder.Prompts.text(session, 'Ich bin echt traurig das ich nicht hilfreich sein kann. Wenn du willst schreib ich für dich eine Mail an den Service. Gibt mir bitte deine e-Mail Adresse.');
@@ -614,13 +613,20 @@ intents.matches('qna', [
     }
 ]);
 
+/* optionales ShowCase Szenario */
+function ImageSubmitAction(session, value){
+    session.endDialog();
+    session.beginDialog('sendImage', value);
+}
 
+/*
+* Submit Action für Dialog
+*/
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Bitte wähle';
     if(value.mobility){
         session.endDialog();
         session.beginDialog('Mobility', value);
-        
     }
     else if(value.usecase === 'business'){
         session.endDialog();
@@ -629,18 +635,25 @@ function processSubmitAction(session, value) {
         session.endDialog();
         session.beginDialog('askForMobility', value);
     } else if (value.help === 'no') {
+        //Falls wir keine Hilfe waren wird das NONE dialog geöffnet und dem Kunden erlaubt eine mail zu schreiben
         session.beginDialog('None', value);
     } else if (value.help === 'yes') {
         session.beginDialog('EndConversation', value);
-    }
+    } 
     
 }
 
+/*
+* Submit des Formulars für das Business case 
+*/
 function formSubmitAction(session, value) {
     session.endDialog();
     session.beginDialog('findBusinessVacuum', value);
 }
 
+/*
+* Ausgabe der Modelle für private Anwendung
+*/
 function findPrivateVacuum(session, mobility){
     if (mobility === "mobile"){
         var vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
@@ -657,7 +670,9 @@ function findPrivateVacuum(session, mobility){
     return attachmentsArray;
 }
 
-
+/*
+* Sucht alle Modelle, die auf die Benutzereingaben passen
+*/
 function findVacuumToMaterial(session, material, volume, ac) {
     for (i in dusts.dustmatches) {
         materialToUse = material.entity || material;
@@ -693,6 +708,9 @@ function findVacuumToMaterial(session, material, volume, ac) {
     return attachmentsArray;
 }
 
+/*
+* Gibt die Produkte als HeroCards aus
+*/ 
 function buildHeroCard(j, session){
     var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
     var obj =
@@ -706,6 +724,9 @@ function buildHeroCard(j, session){
     return obj;
 }
 
+/*
+* Anzeige der Herocards als Carousel
+*/
 function showVacuums(attachmentsArray = [], session){
     var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel);
@@ -713,6 +734,9 @@ function showVacuums(attachmentsArray = [], session){
     session.send(msg);
 }
 
+/*
+* überprüft, ob ein bestimmte Sauger ein bestimmtes material saugen kann
+*/
 function checkMaterialToVacuum(session, vacuumModel, material) {
     //wird alles zu lowerCase gemacht und leerzeichen und bashes gesäubert von Ctl- 26 wir -> ctl26
     var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
@@ -754,12 +778,18 @@ function checkMaterialToVacuum(session, vacuumModel, material) {
     })
 }
 
+/*
+* nach Angabe des Materials (der Stäube) im Business Case Dialog
+*/
 function materialSubmitAction(session, value) {
     session.conversationData.material = findMostSensitive(session, value);
     session.endDialog();
     session.beginDialog('BusinessForm');
 }
 
+/*
+* Aus evtl. mehreren Stäuben wird der kritischste ausgewählt sodass im weiteren Vorgang nurnoch ein Material beachtet werden muss
+*/
 function findMostSensitive(session, value) {
     var mset = false;
     var currentdust;
@@ -778,4 +808,21 @@ function findMostSensitive(session, value) {
         }
     }
     return currentdust.dust;
+}
+
+/*
+* Sucht in dem im Businesscase angegebenen Material-Text nach bekannten Stäuben
+*/
+function findMaterial(session){
+    var materials = [];
+    var dust;
+    material = session.conversationData.material.toLowerCase();
+    material = material.replace(/\,/g," ");
+    for(i in dusts.dustmatches){
+        dust = dusts.dustmatches[i].dust.toLowerCase();
+        if(dust.includes(material) || material.includes(dust)){
+            materials.push(dusts.dustmatches[i].dust);
+        }
+    }
+    return materials;
 }

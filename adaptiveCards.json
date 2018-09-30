@@ -187,5 +187,35 @@
                 }
             ]
         }
+    },
+    "imageConversation": {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Klick hier wenn du ein Bild schicken willst.",
+                            "weight": "bolder",
+                            "size": "medium"
+                        }
+                    ]
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Bild hochladen!",
+                    "data": {
+                        "picture": "true"
+                    }
+                }
+            ]
+        }
     }
 }

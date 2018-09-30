@@ -309,7 +309,7 @@ bot.dialog('findMaterial',[
                 "actions": [
                     {
                         "type": "Action.Submit",
-                        "title": "Submit"
+                        "title": "Absenden"
                     }
                 ] 
             }

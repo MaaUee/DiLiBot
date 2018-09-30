@@ -146,7 +146,7 @@
             "actions": [
                 {
                     "type": "Action.Submit",
-                    "title": "Submit"
+                    "title": "Absenden"
                 }
             ]
         }

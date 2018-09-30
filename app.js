@@ -11,8 +11,9 @@ var dusts = require('./dusts.json');
 var models = require('./models.json');
 var request = require('request');
 var cards = require('./adaptiveCards.json');
-require('dotenv-extended').load();
-require('adaptivecards');
+const utils = require('./utils.js');
+const customVisionService = require('./customVisionService.js');
+
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -212,6 +213,59 @@ bot.dialog('SearchForVacuum', [
 ]).triggerAction({
     matches: 'SearchForVacuum'
 })
+
+function processSubmitAction(session, value) {
+    var defaultErrorMessage = 'Bitte wähle';
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+        
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
+        session.beginDialog('Business', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
+    } else if (value.help === 'no') {
+        session.beginDialog('None', value);
+    } else if (value.help === 'yes') {
+        session.beginDialog('EndConversation', value);
+    }
+    
+}
+
+// default dialog
+/*bot.dialog('/', function(session) {
+    if(utils.hasImageAttachment(session)){
+        var stream = utils.getImageStreamFromMessage(session.message); 
+        customVisionService.predict(stream)
+            .then(function (response) {
+                // Convert buffer into string then parse the JSON string to object
+                var jsonObj = JSON.parse(response.toString('utf8'));
+                console.log(jsonObj);
+                var topPrediction = jsonObj.predictions;
+                topPrediction.find(function(element) {
+                    if(element.probability >= 0.50){
+                        session.send('Hey, I think this image is a' + element.tagName + ' !');
+                    }
+                  });
+
+                // make sure we only get confidence level with 0.80 and above. But you can adjust this depending on your need
+                if (topPrediction.Probability >= 0.50) {
+                    session.send(`Hey, I think this image is a ${topPrediction.Tag}!`);
+                } else {
+                    session.send('Sorry! I don\'t know what that is :(');
+                }
+            }).catch(function (error) {
+                console.log(error);
+                session.send('Oops, there\'s something wrong with processing the image. Please try again.');
+            });
+
+    } else {
+        session.send('I did not receive any image');
+    }
+}); */
 
 bot.dialog('Mobility',[
     (session, next) => {
@@ -423,10 +477,35 @@ bot.dialog('MaterialToVacuum', [
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast: ');
+            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast oder sende mit ein Bild.');
         }
 
     }, (session, results, next) => {
+        /*if(utils.hasImageAttachment(session)){
+            var stream = utils.getImageStreamFromMessage(session.message); 
+            customVisionService.predict(stream)
+                .then(function (response) {
+                    // Convert buffer into string then parse the JSON string to object
+                    var jsonObj = JSON.parse(response.toString('utf8'));
+                    console.log(jsonObj);
+                    var topPrediction = jsonObj.predictions;
+                    topPrediction.find(function(element) {
+                        if(element.probability >= 0.50){
+                            session.send('Hey, I think this image is a' + element.tagName + ' !');
+                        } else {
+                            session.send('Sorry! I don\'t know what that is :(');
+                        }
+                      });
+                }).catch(function (error) {
+                    console.log(error);
+                    session.send('Oops, there\'s something wrong with processing the image. Please try again.');
+                });
+    
+        } else {
+            session.send('I did not receive any image');
+        }*/
+        //TODO unterscheiden von prompt oder nicht prompt daten
+        //TODO unterscheiden von prompt oder nicht prompt daten
         //TODO unterscheiden von prompt oder nicht prompt daten
         var vacuumModel = results.response.vaccumModel || results.response;
         var material = results.response.material || session.conversationData.material;

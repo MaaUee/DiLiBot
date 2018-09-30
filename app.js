@@ -481,7 +481,7 @@ bot.dialog('MaterialToVacuum', [
         }
 
     }, (session, results, next) => {
-        /*if(utils.hasImageAttachment(session)){
+        if(utils.hasImageAttachment(session)){
             var stream = utils.getImageStreamFromMessage(session.message); 
             customVisionService.predict(stream)
                 .then(function (response) {
@@ -503,10 +503,7 @@ bot.dialog('MaterialToVacuum', [
     
         } else {
             session.send('I did not receive any image');
-        }*/
-        //TODO unterscheiden von prompt oder nicht prompt daten
-        //TODO unterscheiden von prompt oder nicht prompt daten
-        //TODO unterscheiden von prompt oder nicht prompt daten
+        }
         var vacuumModel = results.response.vaccumModel || results.response;
         var material = results.response.material || session.conversationData.material;
         if (vacuumModel) {

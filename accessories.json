@@ -1,0 +1,814 @@
+{
+    "accessorie":[  
+        {  
+           "id":"452892",
+           "name":"DREHAUSGLEICH D 27 DAG-AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452894",
+           "name":"DREHAUSGLEICH D 36 DAG-AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452896",
+           "name":"DREHAUSGLEICH D 50 DAG-AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452897",
+           "name":"ADAPTER D 50/D 36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452898",
+           "name":"Sternverteiler  D 50 SV-AS/D 50 V",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452899",
+           "name":"VERSCHLUSSSTÜCK D 50 V",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452902",
+           "name":"Verläng.-Rohr D 36 VR-M 3X",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"452904",
+           "name":"FUGENDUESE D 36 FD 300",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"452906",
+           "name":"BODENDUESE D 36 BD-270",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"452907",
+           "name":"BODENDUESE D 36 BD-300",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"452908",
+           "name":"BODENDUESE D 36 BD 370",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"452910",
+           "name":"BODENDUESE D 50 BD 450",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452912",
+           "name":"FUGENDUESE D 50 FD",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"454157",
+           "name":"SAUGSCHLAUCH D 36 MW",
+           "vacuum":["CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"454158",
+           "name":"SAUGSCHLAUCH D 50 MW",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"454770",
+           "name":"REINIGUNGSSET 5 D 50 GS-RS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"492391",
+           "name":"FUGENDUESE D 36 FD 210",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"492392",
+           "name":"REINIGUNGSSET D 27/36 D-RS",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"493047",
+           "name":"VERBINDUNGSMUF. D 50/D 50 VM-AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495013",
+           "name":"Anschlussmuffe D 36 DM-AS-LHS 225",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495019",
+           "name":"Saugschlauch D21,5 x 5m HSK",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496972",
+           "name":"Saugschlauch D 36 X 3,5-AS/KS/LHS 225",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"497925",
+           "name":"Saugschlauch D 36/32 x 3,5 m-AS",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"498527",
+           "name":"UNIBUERSTDUESE  D 36 UBD",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"498528",
+           "name":"Reduziermuffe RM-D36/27 AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"499196",
+           "name":"Adapterschlauch AD-D36/CS50/CS70/CMS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"499907",
+           "name":"Winkelstück D 32/27 DAG/90°-AS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500483",
+           "name":"Bohrstaub-Düse  D 27 BSD",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500592",
+           "name":"Polsterdüse D 36 PD",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500593",
+           "name":"Fugendüse       D 36 FD-150",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500668",
+           "name":"Schlauchmuffe D27/22 DM-AS/CT",
+           "vacuum":[]
+            
+        },
+        {  
+           "id":"500670",
+           "name":"Schlauchmuffe D 36 DM-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500671",
+           "name":"Schlauchmuffe D 36/32 DM-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500672",
+           "name":"Drehausgleich D 32 DAG-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500673",
+           "name":"Drehausgleich D 32 DAG/90°-AS/CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500677",
+           "name":"Saugschlauch D 27/32x3,5m-AS/CT",
+           "vacuum":["CTL SYS","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500678",
+           "name":"Saugschlauch D 27/32x5,0m-AS/CT",
+           "vacuum":["CTL SYS ","CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26/48"]
+        },
+        {  
+           "id":"500680",
+           "name":"Saugschlauch D 27/32x3,5m-AS-90°/CT",
+           "vacuum":["CTL MINI","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500681",
+           "name":"Saugschlauch D 36x3,5m-AS/CT",
+           "vacuum":["CTL 26/36/48 AC HD","CTM 26/36/48 AC HD","CTH 26/48"]
+        },
+        {  
+           "id":"500682",
+           "name":"Saugschlauch D 36/32x3,5m-AS",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500684",
+           "name":"Saugschlauch D 36x5,0m-AS/CT",
+           "vacuum":["CTL 26 AC HD","36 AC HD","48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"500685",
+           "name":"Saugschlauch D 36x7,0m-AS/CT",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"768114",
+           "name":"Saugschlauch D 36/32 x 3,0 m",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"202097",
+           "name":"Fernbedienung CT-F I/M-Set",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"202098",
+           "name":"Fernbedienung CT-F I",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD","CTH 26","CTH 48"]
+        },
+        {  
+           "id":"204083",
+           "name":"Vorabscheider CT-VA 20",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD"]
+     
+        },
+        {  
+           "id":"204294",
+           "name":"Behälter VAB-20/1",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD"]
+     
+        },
+        {  
+           "id":"204295",
+           "name":"Behälter VAB-20/3",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD"]
+     
+        },
+        {  
+           "id":"452829",
+           "name":"DRUCKLUFTMODUL  DLM-CT",
+           "vacuum":["CTL SYS ","CTL MINI ","CTL MIDI","CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD", "CTM 26 AC HD", "CTM 36 AC HD", "CTM 48 AC HD", "CTH 26", "CTH 48"]
+        },
+        {  
+           "id":"452921",
+           "name":"SCHUBBUEGEL SB-CT",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495756",
+           "name":"Modul EAA-CT 22/33/44/55",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495802",
+           "name":"Schubbügel SB-CT 26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495886",
+           "name":"Versorgungseinh VE-CT 26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495964",
+           "name":"Werkzeughalter  WHR-CT 36-LHS 225",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452925",
+           "name":"SCHMUTZBEHAELT. SBH-CT 22",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452926",
+           "name":"SCHMUTZBEHAELT. SBH-CT 33",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"494388",
+           "name":"Schlauchdepot CT-SG",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496122",
+           "name":"Werkzeughalter  WHR-CT 26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496141",
+           "name":"Modul DL-CT26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496142",
+           "name":"Steckdose Modul-SD CT 26/36/48",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496143",
+           "name":"Modul EAA-CT26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496862",
+           "name":"Montagesatz MS DH VE-CTASA-CT26/36",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"497295",
+           "name":"Schubbügel SB-CT 48",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"497926",
+           "name":"Verschl.schiebe VS-CT AC/SRM45 Planex",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496405",
+           "name":"Steckdose Modul-SD E/A CT 26/36/48",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"500312",
+           "name":"Vak.-Spanndüse  CT WINGS",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"575667",
+           "name":"Anschlusskabel  CT-VA AK EU",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"498805",
+           "name":"Adapterset WCR AS-CT EC B22-VE CT48",
+           "vacuum":["VE CT 48"]
+     
+        },
+        {  
+           "id":"494388",
+           "name":"Schlauchdepot CT-SG",
+           "vacuum":["SGt SG"]
+     
+        },
+        {  
+           "id":"200340",
+           "name":"Hauptfilter HEPA HF-CT SYS",
+           "vacuum":["CTL SYS"]
+     
+        },
+        {  
+           "id":"203759",
+           "name":"Hauptfilter HF-CT 26/36/48 HP",
+           "vacuum":["CTL 26 AC HD","CTL 36 AC HD","CTL 48 AC HD","CTM 26 AC HD","CTM 36 AC HD","CTM 48 AC HD"]
+     
+        },
+        {  
+           "id":"452923",
+           "name":"HAUPTFILTER HF-CT/2",
+           "vacuum":["CTL 22","CTL 33","CTL 44","CTM 22","CTM 33","CTM 44"]
+     
+        },
+        {  
+           "id":"452925",
+           "name":"SCHMUTZBEHAELT. SBH-CT 22",
+           "vacuum":["CTL 22","CTM 22"]
+     
+        },
+        {  
+           "id":"452926",
+           "name":"SCHMUTZBEHAELT. SBH-CT 33",
+           "vacuum":["CTL 33","CTM 33"]
+     
+        },
+        {  
+           "id":"454869",
+           "name":"Hauptfilter LONGLIFE-HF-CT/2",
+           "vacuum":["CTL 22","CTL 33","CTL 44","CTM 22","CTM 33","CTM 44"]
+     
+        },
+        {  
+           "id":"456737",
+           "name":"FILTERSACK LONGLIFE-FIS-CT 22",
+           "vacuum":["CTL 22"]
+     
+        },
+        {  
+           "id":"456738",
+           "name":"FILTERSACK LONGLIFE-FIS-CT 33",
+           "vacuum":["CTL 33"]
+     
+        },
+        {  
+           "id":"456790",
+           "name":"HAUPTFILTER HF-CT MINI/MIDI",
+           "vacuum":["CTL MINI","CTL MIDI"]
+     
+        },
+        {  
+           "id":"493334",
+           "name":"HAUPTFILTER HEPA-HF-CT/2",
+           "vacuum":["CTL 22","CTL 33","CTL 44","CTL 55","CTM 22","CTM 33","CTM 44","CTM 55"]
+     
+        },
+        {  
+           "id":"496120",
+           "name":"Filtersack Longlife-FIS-CT 26",
+           "vacuum":["CTL 26"]
+     
+        },
+        {  
+           "id":"496121",
+           "name":"Filtersack Longlife-FIS-CT 36",
+           "vacuum":["CTL 36"]
+     
+        },
+        {  
+           "id":"496170",
+           "name":"Hauptfilter HF-CT 26/36/48",
+           "vacuum":["CTL 26","CTL 26","CTL 36","CTL 48","CTM 26","CTM 36","CTM 48"]
+     
+        },
+        {  
+           "id":"496752",
+           "name":"Hauptfilter HEPA-HF CT MINI/MIDI /1",
+           "vacuum":["CTL MINI","CTL MIDI"]
+     
+        },
+        {  
+           "id":"498506",
+           "name":"Filtersack Longlife-FIS-CT 48",
+           "vacuum":["CTL 48"]
+     
+        },
+        {  
+           "id":"498994",
+           "name":"Hauptfilter HEPA-HF-CT 26/36/48",
+           "vacuum":["CTL 22","CTM 22"]
+     
+        },
+        {  
+           "id":"498995",
+           "name":"Hauptfilter HF CTH 26/48",
+           "vacuum":["CTL 33","CTM 33"]
+     
+        },
+        {  
+           "id":"499703",
+           "name":"Filtersack Longlife-FIS-CTL- MINI",
+           "vacuum":["CTL 44", "CTM 44"]
+     
+        },
+        {  
+           "id":"499704",
+           "name":"Filtersack Longlife-FIS-CTL MIDI",
+           "vacuum":["CTL MIDI"]
+     
+        },
+        {  
+           "id":"500558",
+           "name":"Hauptfilter HF-CT SYS",
+           "vacuum":["CTL SYS"]
+     
+        },
+        {  
+           "id":"500642",
+           "name":"Filtersack LL-FIS CT SYS",
+           "vacuum":["CTL SYS"]
+     
+        },
+        {  
+           "id":"451230",
+           "name":"VORFILTER VF-MULTI",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"452924",
+           "name":"NASSFILTER      NF-CT/2",
+           "vacuum":["CTL 22","CTL 33","CTL 44","CTM 22","CTM 33","CTM 44"]
+     
+        },
+        {  
+           "id":"452970",
+           "name":"FILTERSACK FIS-CT 22 5X",
+           "vacuum":["CTL 22","CTM 22"]
+     
+        },
+        {  
+           "id":"452971",
+           "name":"FILTERSACK FIS-CT 33 5X",
+           "vacuum":["CTL 33","CTM 33"]
+     
+        },
+        {  
+           "id":"452972",
+           "name":"FILTERSACK FIS-CT 44 5X",
+           "vacuum":["CTL 44","CTM 44"]
+     
+        },
+        {  
+           "id":"452973",
+           "name":"FILTERSACK FIS-CT 55 5X",
+           "vacuum":["CTL 55", "CTM 55"]
+     
+        },
+        {  
+           "id":"456805",
+           "name":"NASSFILTER      NF-CT MINI/MIDI",
+           "vacuum":["CTL MINI, CTL MIDI"]
+     
+        },
+        {  
+           "id":"456870",
+           "name":"FILTERSACK FIS-CT 22 SP VLIES/5",
+           "vacuum":["CTL 22","CTM 22"]
+     
+        },
+        {  
+           "id":"456871",
+           "name":"FILTERSACK FIS-CT 33 SP VLIES/5",
+           "vacuum":["CTL 33","CTM 33"]
+     
+        },
+        {  
+           "id":"456874",
+           "name":"FILTERSACK FIS-CT 44 SP VLIES/5",
+           "vacuum":["CTL 44","CTM 44"]
+     
+        },
+        {  
+           "id":"483142",
+           "name":"FILTERSACK FIS-SR 12/14 5ST.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"483143",
+           "name":"FILTERSACK FIS-SR 5/6 5ST.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"483889",
+           "name":"FILTERSACK FIS-SR 15 5ST.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"487070",
+           "name":"FILTERSACK FIS-SR 200 5STCK.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"487482",
+           "name":"FILTERSACK FIS-SR 202 5STCK.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"487790",
+           "name":"FILTERSACK FIS-SR 300 5STCK.",
+           "vacuum":[]
+        },
+        {  
+           "id":"488460",
+           "name":"FILTERSACK FIS-SR 150 5STCK.",
+           "vacuum":[]
+        },
+        {  
+           "id":"493775",
+           "name":"FILTERSACK FIS-SRM 45 5X",
+           "vacuum":["SRM 45"]
+     
+        },
+        {  
+           "id":"493776",
+           "name":"FILTERSACK FIS-SRH 45 5X",
+           "vacuum":["SRH 45"]
+     
+        },
+        {  
+           "id":"493777",
+           "name":"FILTERSACK FIS-SRM 70 5X",
+           "vacuum":["SRM 70"]
+     
+        },
+        {  
+           "id":"494631",
+           "name":"FILTERSACK FIS-CT 22/20x",
+           "vacuum":["CTL 22","CTM 22"]
+     
+        },
+        {  
+           "id":"494632",
+           "name":"FILTERSACK FIS-CT 33/20x",
+           "vacuum":["CTL 33","CTM 33"]
+     
+        },
+        {  
+           "id":"495014",
+           "name":"Filtersack FIS-SRM 45-LHS 225 5X",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"495015",
+           "name":"Entsorgungssack ENS-SRM 45-LHS 225 5X",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"496169",
+           "name":"Nassfilter NF-CT 26/36/48",
+           "vacuum":["CTL 26/36/48 AC HD","CTM 26/36/48 AC HD"]
+     
+        },
+        {  
+           "id":"496186",
+           "name":"Filtersack SC-FIS-CT 36/5",
+           "vacuum":["CTL 36","CTM 36","CTL 36 AC HD","CTM 36 AC HD"]
+     
+        },
+        {  
+           "id":"496187",
+           "name":"Filtersack SC-FIS-CT 26/5",
+           "vacuum":["CTL 26","CTM 26","CTL 26 AC HD","CTM 26 AC HD"]
+     
+        },
+        {  
+           "id":"496215",
+           "name":"Entsorgungssack ENS-CT 36 AC/5",
+           "vacuum":["CTL 36 AC HD","CTM 36 AC HD"]
+     
+        },
+        {  
+           "id":"496216",
+           "name":"Entsorgungssack ENS-CT 26 AC/5",
+           "vacuum":["CTL 26 AC HD","CTM 26 AC HD"]
+     
+        },
+        {  
+           "id":"497539",
+           "name":"Filtersack SC-FIS-CT 48/5",
+           "vacuum":["CTL 48","CTM 48","CTL 48 AC","CTM 48 AC"]
+     
+        },
+        {  
+           "id":"497540",
+           "name":"Entsorgungssack ENS-CT 48 AC/5",
+           "vacuum":["CTL 48 AC","CTM 48 AC"]
+     
+        },
+        {  
+           "id":"497541",
+           "name":"Filtersack FIS-CTH 26/3",
+           "vacuum":["CTH 26"]
+     
+        },
+        {  
+           "id":"497542",
+           "name":"Filtersack FIS-CTH 48/3",
+           "vacuum":["CTH 48"]
+     
+        },
+        {  
+           "id":"498410",
+           "name":"Filtersack SC-FIS-CT MINI/5",
+           "vacuum":["CTL MINI"]
+     
+        },
+        {  
+           "id":"498411",
+           "name":"Filtersack SC-FIS-CT MIDI/5",
+           "vacuum":["CTL MIDI"]
+     
+        },
+        {  
+           "id":"500438",
+           "name":"Filtersack SC FIS-CT SYS/5",
+           "vacuum":["CTL SYS"]
+     
+        },
+        {  
+           "id":"614660",
+           "name":"Filterbeutel PFB-VCP 5 St.",
+           "vacuum":["VCP 5 St."]
+     
+        },
+        {  
+           "id":"625344",
+           "name":"Filtersack FB-VCP 260 L+M 5 St.",
+           "vacuum":["VCP 260 L","VCP 260 M"]
+     
+        },
+        {  
+           "id":"625368",
+           "name":"Filtersack FB-VCP 260 H 5 St.",
+           "vacuum":["VCP 260 H"]
+     
+        },
+        {  
+           "id":"625369",
+           "name":"Entsorgungssack DB-VCP 260 5St.",
+           "vacuum":["VCP 260 5St."]
+     
+        },
+        {  
+           "id":"630505",
+           "name":"Filtersack FB-VCP 250 5 ST.",
+           "vacuum":[]
+     
+        },
+        {  
+           "id":"632735",
+           "name":"Filtersack FB-VCP 700 L+M",
+           "vacuum":["VCP 700 L","VCP 700 M"]
+     
+        },
+        {  
+           "id":"632737",
+           "name":"Entsorgungssack DB-VCP 700 5 St.",
+           "vacuum":["VCP 700 L"]
+     
+        },
+        {  
+           "id":"633582",
+           "name":"Filtersack FB-VCP 320/ VCP 321",
+           "vacuum":["VCP 320","VCP 321"]
+     
+        },
+        {  
+           "id":"638236",
+           "name":"Filtersack LFB-VCP320/321 Longlife",
+           "vacuum":["VCP 320","VCP 321"]
+     
+        },
+        {  
+           "id":"765355",
+           "name":"Filtersack FB-VCP 10 5x",
+           "vacuum":["VCP 10 5x"]
+     
+        },
+        {  
+           "id":"769136",
+           "name":"Filtersack FIS-CT 17/5x",
+           "vacuum":["CT 17"]
+     
+        },
+        {  
+           "id":"778803",
+           "name":"Filtersack FB-VCP300 L+M 5St.",
+           "vacuum":["VCP 300 L","VCP 300 M"]
+     
+        },
+        {  
+           "id":"778804",
+           "name":"Entsorgungssack DB-VCP300 5St.",
+           "vacuum":["VCP 300 L"]
+     
+        }
+     
+     ]
+    
+}

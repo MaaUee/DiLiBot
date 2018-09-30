@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework. 
+A simple echo bot for the Microsoft Bot Framework. 
 -----------------------------------------------------------------------------*/
 
 var restify = require('restify');
@@ -7,7 +7,13 @@ var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
-require('dotenv-extended').load();
+var dusts = require('./dusts.json');
+var models = require('./models.json');
+var request = require('request');
+var cards = require('./adaptiveCards.json');
+const utils = require('./utils.js');
+const customVisionService = require('./customVisionService.js');
+
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -18,11 +24,12 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
-    appPassword: process.env.MicrosoftAppPassword
+    appPassword: process.env.MicrosoftAppPassword,
+    openIdMetadata: process.env.BotOpenIdMetadata
 });
 
 // Listen for messages from users 
-/* server.post('/api/messages', connector.listen()); */
+server.post('/api/messages', connector.listen());
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -30,16 +37,16 @@ var connector = new builder.ChatConnector({
 * For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
 * ---------------------------------------------------------------------------------------- */
 
-/* var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
- */
+//var tableName = 'botdata';
+//var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+//var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+
 // Create your bot with a function to receive messages from the user
-// This default message handler is invoked if the user's utterance doesn't
-// match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector);
-bot.set('storage', new builder.MemoryBotStorage());         // Register in-memory state storage
-server.post('/api/messages', connector.listen());
+bot.set('storage', new builder.MemoryBotStorage());
+
+//bot.set('storage', tableStorage);
+
 
 var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     knowledgeBaseId: '8f297337-8959-44f6-a8cd-8127e94f350d',
@@ -48,27 +55,91 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
     top: 4
 });
 
-/* bot.set('storage', tableStorage); */
-
 // Make sure you add code to validate these fields
-var luisAppId = process.env.LuisAppId;
-var luisAPIKey = process.env.LuisAPIKey;
+var luisAppId = '87dcb46e-14e5-438a-be34-a9e321a1cd0b';
+var luisAPIKey = 'fe6e32de84f74dfca2cb86892b47f945';
 var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.microsoft.com';
 
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
-
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + '87dcb46e-14e5-438a-be34-a9e321a1cd0b' + '?subscription-key=' + 'fe6e32de84f74dfca2cb86892b47f945';
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 bot.recognizer(recognizer);
 
 // Add a dialog for each intent that the LUIS app recognizes.
-// See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
+
+//API call um TOKEN zu bekommen
+//wird nicht verwendet weil wir die API nicht nach Produkte anfrage
+function getToken() {
+    return new Promise((resolve) => {
+        var tokenOptions = {
+            url: 'https://login-festool-qs.azurewebsites.net/connect/token',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.siren+json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic aGFja2F0aG9uLmhkbS5zdGFnaW5nOkw2ZUJKUWhBUzdlQ01zOE9NM1pl'
+            },
+            body: 'grant_type=client_credentials&scope=tts.pim_catalog'
+        }
+
+        request.post(tokenOptions, function (error, response, body) {
+            resolve(body);
+        })
+    })
+}
+//API call für Produkte
+//wird nicht verwendet weil JSON sehr unpraktisch ist
+function getProduct(token, id) {
+    return new Promise((resolve) => {
+        var headers = {
+            'Accept': 'application/vnd.siren+json',
+            'X-TTS-ApiKey': '580deae71c371f0001000008670cd3a266244d69494b6d96ffe12227',
+            'Authorization': 'Bearer ' + token
+        }
+
+        var options = {
+            url: 'https://api-qs.tts-company.com:443/pimservice/MachineModel/de-DE/' + id,
+            method: 'GET',
+            headers: headers
+        }
+
+        request.get(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                resolve(body);
+            }
+        })
+    })
+}
+
+/*
+async function connectApi(){
+    const token = await getToken();
+    const tokenId = JSON.parse(token);
+    const product = await getProduct(tokenId, 'id-96c3adba-dbc4-11e6-80dc-005056b345de');
+
+
+    session.send('Your Toke:' + tokenId + 'and your product: ' + JSON.parse(product));
+}
+*/
+
+//Standart Dialog checkt alle Intents durch und sucht sich das richtige aus
+bot.dialog('/', intents);
+
+bot.on('conversationUpdate', (session, activity, message) => {
+    if (session.membersAdded) {
+        session.membersAdded.forEach(function (identity) {
+            if (identity.id === session.address.bot.id) {
+                bot.beginDialog(session.address, 'GreetingDialog');
+            }
+        });
+    }
+})
 
 bot.dialog('GreetingDialog',
     (session) => {
-        session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
+        session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
         session.endDialog();
     }
 ).triggerAction({
@@ -77,32 +148,331 @@ bot.dialog('GreetingDialog',
 
 bot.dialog('HelpDialog',
     (session) => {
-        session.send('You reached the Help intent. You said \'%s\'.', session.message.text);
+        session.send('Hallo, ich bin DiLiBot, ich kann dich auf der Suche nach einem Absaugmobil beraten, oder dir Fragen zu deinem Modell beantworten', session.message.text);
         session.endDialog();
+    } ,(session, __, next) => {
+        choicebox = cards.privateBusiness;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        next();
+    },    
+    (session) => {
+
     }
 ).triggerAction({
     matches: 'Help'
 })
 
-bot.dialog('SearchForVacuum',
+bot.dialog('findBusinessVacuum',[
+    function (session, args, next) {
+        var material = session.conversationData.material;
+        var volume = session.message.value.volume;
+        var ac = session.message.value.ac;
+        if(material) {
+            showVacuums(findVacuumToMaterial(session, material, volume, ac),session);
+            session.endDialog();
+            session.endConversation();
+        } else {
+            next();
+        }
+   },
+   (session, __, next) => {
+        choicebox = cards.privateBusiness;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        next();
+    },    
     (session) => {
-        session.send('You reached the SearchForVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+
     }
-).triggerAction({
+])
+
+bot.dialog('SearchForVacuum', [
+    function (session, args, next) {
+        if (session.message && session.message.value) {
+            // A Card's Submit Action obj was received
+            processSubmitAction(session, session.message.value);
+            return;
+        }
+        var material = session.conversationData.material || builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        if(material) {
+            session.conversationData.material = material;
+            session.endDialog();
+            session.beginDialog("BusinessForm");
+        } else {
+            next();
+        }
+   },
+   (session, __, next) => {
+        choicebox = cards.privateBusiness;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        next();
+    },
+    (session) => {
+    }
+
+]).triggerAction({
     matches: 'SearchForVacuum'
 })
 
-bot.dialog('MaterialToVacuum', [
-    (session, args, next) => {
+/* optional Show case */
+function ImageSubmitAction(session, value){
+    session.endDialog();
+    session.beginDialog('sendImage', value);
+}
 
+function processSubmitAction(session, value) {
+    var defaultErrorMessage = 'Bitte wähle';
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
+        session.beginDialog('Business', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
+    } else if (value.help === 'no') {
+        //Falls wir keine Hilfe waren wird das NONE dialog geöffnet und dem Kunden erlaubt eine mail zu schreiben
+        session.beginDialog('None', value);
+    } else if (value.help === 'yes') {
+        session.beginDialog('EndConversation', value);
+    } 
+    
+}
+
+bot.dialog('Mobility',[
+    (session, next) => {
+        if(session.message.value.mobility){
+            var mobility = session.message.value.mobility;
+            if(mobility === "mobile"){
+                showVacuums(findPrivateVacuum(session,mobility),session);
+            }else if (mobility === "stationary"){
+                showVacuums(findPrivateVacuum(session,mobility),session);
+            }
+        }
+    },    
+    (session) => {
+        choicebox = cards.endConversation;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+            setTimeout (()=>{session.send(msg);},3000);
+    }
+])
+
+//Dialog um Konversation abzuschließen
+bot.dialog('EndConversation', [
+    (session) => {
+        session.send('Cool das freut mich! Danke dir.');
+        session.send('Frag mich was falls ich noch helfen darf.');
+        session.endConversation();
+    }
+])
+
+bot.dialog('Business', [
+    (session) => {
+        builder.Prompts.text(session, 'Mit welchen Stäuben möchtest du arbeiten?');
+    },
+    (session, results, next) => {
+            session.conversationData.material = results.response;
+            if(session.conversationData.material){
+                var materials = findMaterial(session);
+                if(materials.length > 0){
+                    console.log(materials);
+                    session.conversationData.materials = materials;
+                    session.endDialog();
+                    session.beginDialog('findMaterial');
+                }else{
+                    session.endDialog();
+                    session.beginDialog('Business');
+                }
+            }else{
+                session.endDialog();
+                session.beginDialog('Business');
+            }
+    },
+    (session) => {
+        session.endDialog();
+    }
+])
+
+function findMaterial(session){
+    var materials = [];
+    var dust;
+    material = session.conversationData.material.toLowerCase();
+    material = material.replace(/\,/g," ");
+    for(i in dusts.dustmatches){
+        dust = dusts.dustmatches[i].dust.toLowerCase();
+        if(dust.includes(material) || material.includes(dust)){
+            materials.push(dusts.dustmatches[i].dust);
+        }
+    }
+    return materials;
+}
+
+bot.dialog('findMaterial',[
+    (session, results, next) => {
+        if (session.message && session.message.value) {
+            materialSubmitAction(session, session.message.value);
+            console.log(session.message.value);
+            return;
+        }
+        else {
+           next();
+        }
+    },
+    (session, __, next) => {
+        var choices = [];
+        for(i in session.conversationData.materials){
+            choice = {
+                "type":"Input.Choice",
+                "title":session.conversationData.materials[i],
+                "value":session.conversationData.materials[i]
+            }
+            choices.push(choice);
+        }
+   
+        askmaterials = {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [{
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Bitte wähle aus, welche dieser Stäube du saugen möchtest",
+                            "weight": "bolder",
+                            "size": "medium"
+                        },
+                        {
+                            "type":"Input.ChoiceSet",
+                            "id":"materials",
+                            "isMultiSelect":"true",
+                            "choices":choices  
+                        }
+                    ] 
+                }],
+                "actions": [
+                    {
+                        "type": "Action.Submit",
+                        "title": "Submit"
+                    }
+                ] 
+            }
+
+        }      
+        console.log(askmaterials);      
+        var msg = new builder.Message(session)
+            .addAttachment(askmaterials);
+        session.send(msg);
+        next();
+    },(session, results) => {
+        console.log(JSON.stringify(results))
+    }
+
+])
+
+bot.dialog('BusinessForm',[
+    function (session, args, next) {
+        if (session.message && session.message.value && session.message.value.volume) {
+            formSubmitAction(session, session.message.value);
+            return;
+        }
+        else {
+           next();
+        }
+   },
+   (session, __, next) => {
+        form = cards.findVacuum;
+        var msg = new builder.Message(session)
+            .addAttachment(form);
+        session.send(msg);
+        next();
+    },(session, results) => {
+        console.log(JSON.stringify(results))
+    }
+])
+
+bot.dialog('askForMobility',[
+    function (session, args, next) { 
+        if (session.message && session.message.value && session.message.value.mobility) {
+            // A Card's Submit Action obj was received
+            processSubmitAction(session, session.message.value);
+            return;
+        }
+        next();
+    },
+    (session, __, next) => {
+        choicebox = cards.mobility;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+    },
+
+])
+/*optional showcase scenario
+// Dieser Dialog erkennt Bilder und gibt den namen als Text raus
+bot.dialog('SendImage',[
+    function (session) { 
+        session.send('HALLOOOOOO');
+        builder.Prompts.attachment(session,'Lad ein Bild von deinem Absaugmobils.');
+    },
+    (session, __, next) => {
+        if(utils.hasImageAttachment(session)){
+            var stream = utils.getImageStreamFromMessage(session.message); 
+            customVisionService.predict(stream)
+                .then(function (response) {
+                    // Convert buffer into string then parse the JSON string to object
+                    var jsonObj = JSON.parse(response.toString('utf8'));
+                    console.log(jsonObj);
+                    //Array mit predictions
+                    var topPrediction = jsonObj.predictions;
+                    topPrediction.find(function(element) {
+                        //wir holen uns die Prediction mit 0.50 oder höher
+                        if(element.probability >= 0.50){
+                            // element.tagName ist der Tag was Vision erkennt
+                            session.send('Hey, I think this image is a' + element.tagName + ' !');
+                        } else {
+                            session.send('Sorry! I don\'t know what that is :(');
+                        }
+                      });
+                }).catch(function (error) {
+                    console.log(error);
+                    session.send('Oops, there\'s something wrong with processing the image. Please try again.');
+                });
+    
+        } else {
+            //Falls er kein Bild bekommt
+            session.send('I did not receive any image');
+        }
+    },
+
+])*/
+
+bot.dialog('MaterialToVacuum', [
+    //STEP 1
+    (session, args, next) => {
+        
+        //Checkt ob Adaptive card geklickt wurde und ruft processSubmitAction() auf //Für Optionales Showcase Scenario
+        /*if (session.message && session.message.value) {
+            ImageSubmitAction(session, session.message.value);
+            return;
+        }*/
+
+        //prüft ob Entities im Satz sind
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
         var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
-        var materialEntity = material.entity;
 
+        //falls beides erkannt ist wird gleich mit der Antwort im STEP 2 weitergemacht
         if (vaccumModel && material) {
-            session.send('You are searching for a Vaccum: ' + vaccumModel.entity);
-            session.send('Your Material is: ' + material.entity);
             next({
                 response: {
                     vaccumModel: vaccumModel.entity,
@@ -110,47 +480,101 @@ bot.dialog('MaterialToVacuum', [
                 }
             });
         }
+        //falls nur material erkannt wurde gehen fragen wir nochmal nach MODEL und gehen in STEP 2
         else if (material && !vaccumModel) {
-            // no entities detected, ask user for a destination
+            // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Please enter your Vaccum Model');
+            //choicebox = cards.imageConversation;
+            builder.Prompts.text(session, 'Ich konnte das Modell deines Absaugmobils nicht verstehen. \n Bitte sag mir, was für ein Absaugmobil du hast.');
+        /* var msg = new builder.Message(session)
+                .addAttachment(choicebox);
+            session.send(msg);*/
         }
 
-        session.send('You reached the MaterialToVacuum intent. You said \'%s\'.', session.message.text);
-
-    }, (session, results) => {
-        //TODO unterscheiden von prompt oder nicht prompt daten
-        var vacumModel = results.response;
-        var material = session.conversationData.material;
-        session.send('Your Model: ' + vacumModel + 'And your Material: ' + material);
-        session.endDialog();
+    },
+    //STEP 2 
+    (session, results, next) => {
+        //results.response.vaccumModel ist wenn beides am anfang erkannt wurde wenn nicht steht Prompt in results.response
+        var vacuumModel = results.response.vaccumModel || results.response;
+        //gleiche wie oben
+        var material = results.response.material || session.conversationData.material;
+        if (vacuumModel) {
+            //falls erkannt gehen wir hier rein und checken ob der sauger das kann und senden zum nächsten Step
+            checkMaterialToVacuum(session, vacuumModel, material);
+            next();
+        }else {
+            session.send("Tut mir leid, Ich konnte das Model deines Absaugmobils nicht verstehen. bitte stelle eine neue Anfrage");
+        }
+    },
+    //STEP 3
+    (session) => {
+        //hier wird die CARD gepusht um zu checken ob der Kunde zurfrieden war <endConversation> im File adaptiveCards.json
+        choicebox = cards.endConversation;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+            setTimeout (()=>{session.send(msg);},3000);
+    },
+    (session) => {
     }
 ]).triggerAction({
     matches: 'MaterialToVacuum'
 })
 
-bot.dialog('DetailsToVacuum',
+bot.dialog('DetailsToVacuum',[
     (session) => {
-        session.send('You reached the DetailsToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    url = {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "actions": [
+                {
+                    "type": "Action.OpenUrl",
+                    "title": "Details zu den Produkten findest du auf unserer Homepage",
+                    "url": "https://www.festool.de/produkte/saugen"
+                }
+            ]
+        }
     }
-).triggerAction({
+    var msg = new builder.Message(session)
+        .addAttachment(url);
+    session.send(msg);
+    next();
+    },(session, results) => {
+        session.send(JSON.stringify(results));
+    }
+]).triggerAction({
     matches: 'DetailsToVacuum'
 })
 
-bot.dialog('AccessoryToVacuum',
+bot.dialog('AccessoryToVacuum',[
     (session) => {
-        session.send('You reached the AccessoryToVacuum intent. You said \'%s\'.', session.message.text);
-        session.endDialog();
+    url = {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+            "actions": [
+                {
+                    "type": "Action.OpenUrl",
+                    "title": "passendes Zubehör zu den Produkten findest du auf unserer Homepage",
+                    "url": "https://www.festool.de/produkte/saugen"
+                }
+            ]
+        }
     }
-).triggerAction({
+    var msg = new builder.Message(session)
+        .addAttachment(url);
+    session.send(msg);
+    next();
+    },(session, results) => {
+        session.send(JSON.stringify(results));
+    }
+]).triggerAction({
     matches: 'AccessoryToVacuum'
 })
 
 bot.dialog('None', [
+    //Hier sollten wir versuchen noch Ein Text einzubinden ist aber nicht wirklich notwendig. Jetzt wird nur die Email weitergegeben
     (session) => {
         session.conversationData.question = session.message.text;
-        builder.Prompts.text(session, 'I am sorry, unfortunately I cannot answer your question. I will inform an employee to answer your question via mail. What is your email adress?');
+        builder.Prompts.text(session, 'Ich bin echt traurig das ich nicht hilfreich sein kann. Wenn du willst schreib ich für dich eine Mail an den Service. Gibt mir bitte deine e-Mail Adresse.');
     },
     (session, results) => {
         var transporter = nodemailer.createTransport({
@@ -158,31 +582,30 @@ bot.dialog('None', [
             port: '465',
             secure: true,
             auth: {
-                user: 'dilibot@mail.de',
-                pass: 'DiliBot18!'
+                user: 'delibot@mail.de',
+                pass: 'DeliBot18!'
             }
         });
         var mailOptions = {
             from: 'delibot@mail.de',
-            to: results.response,
+            to: 'delibot@mail.de',
             subject: 'BotMail',
-            text: session.conversationData.question
+            text:'Frage/Problem: ' + session.conversationData.question + 'eMail: ' + results.response
         };
 
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
                 session.send('Sorry something went wrong I could send the mail. Please contact the support 0702480424010.')
             } else {
-                session.send('Thank you for providing your email adress. I have informed an employee to answer your question.');
+                session.send('Danke das du mir deine eMail gegeben hast. Ich habe die Servicemitarbeiter benachrichtigt um deine Frage so schnell es geht zu beantworten.');
+                session.send('Falls du noch Fragen hast kannst du mich ruhig fragen :)');
             }
         });
-        session.endDialog();
+        session.endConversation();
     }
 ]).triggerAction({
     matches: 'None'
 })
-
-bot.dialog('/', intents);
 
 intents.matches('qna', [
     function (session, args, next) {
@@ -190,3 +613,169 @@ intents.matches('qna', [
         session.send(answerEntity.entity);
     }
 ]);
+
+
+function processSubmitAction(session, value) {
+    var defaultErrorMessage = 'Bitte wähle';
+    if(value.mobility){
+        session.endDialog();
+        session.beginDialog('Mobility', value);
+        
+    }
+    else if(value.usecase === 'business'){
+        session.endDialog();
+        session.beginDialog('Business', value);
+    }else if(value.usecase === 'private'){
+        session.endDialog();
+        session.beginDialog('askForMobility', value);
+    } else if (value.help === 'no') {
+        session.beginDialog('None', value);
+    } else if (value.help === 'yes') {
+        session.beginDialog('EndConversation', value);
+    }
+    
+}
+
+function formSubmitAction(session, value) {
+    session.endDialog();
+    session.beginDialog('findBusinessVacuum', value);
+}
+
+function findPrivateVacuum(session, mobility){
+    if (mobility === "mobile"){
+        var vacuums = ["CTL MIDI","CTL 26 E","CTL SYS", "CTL MINI", "CTL 26 E AC", "CTL 26 E AC HD"];
+    }else if(mobility === "stationary"){
+        var vacuums = ["CTL 36 E","CTL 36 E AC","CTL 36 E AC HD", "CTL 48 E", "CTL 48 EAC"];
+    }
+    var attachmentsArray = [];
+    for(j in models.vacuumTypes){
+        if(vacuums.includes(models.vacuumTypes[j].model)){
+            obj = buildHeroCard(j, session);
+            attachmentsArray.push(obj);
+        }
+    }
+    return attachmentsArray;
+}
+
+
+function findVacuumToMaterial(session, material, volume, ac) {
+    for (i in dusts.dustmatches) {
+        materialToUse = material.entity || material;
+        if (dusts.dustmatches[i].dust.toLowerCase() === materialToUse.toLowerCase() ) {
+            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            var attachmentsArray = [];
+            for (j in models.vacuumTypes) {
+                var ctx = (models.vacuumTypes[j].model).substring(0, 3);
+                var condition = (models.vacuumTypes[j].model).includes(dusts.dustmatches[i].dustclass);
+                if (dusts.dustmatches[i].dustclass === "L") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("M") || ctx.includes("H");
+                } else if (dusts.dustmatches[i].dustclass === "M") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass) || ctx.includes("H");
+                } else if (dusts.dustmatches[i].dustclass === "H") {
+                    condition = ctx.includes(dusts.dustmatches[i].dustclass);
+                }
+                if(condition){
+                    var obj = false;
+                    if(volume && ac){
+                        if((models.vacuumTypes[j].model).includes(volume) && (models.vacuumTypes[j].model).includes("AC")){
+                            obj = buildHeroCard(j, session);
+                        }
+                    }else{
+                        obj = buildHeroCard(j, session);
+                    }
+                    if(obj){
+                        attachmentsArray.push(obj);
+                    }
+                }
+            }
+        }
+    }
+    return attachmentsArray;
+}
+
+function buildHeroCard(j, session){
+    var url = "https://www.festool.de/@" + models.vacuumTypes[j].id;
+    var obj =
+        new builder.HeroCard(session)
+            .title("Absaugmobil %s", models.vacuumTypes[j].model)
+            .images([builder.CardImage.create(session, models.vacuumTypes[j].img)])
+            .buttons([
+                builder.CardAction.openUrl(session, url, "mehr")
+            ])
+        ;
+    return obj;
+}
+
+function showVacuums(attachmentsArray = [], session){
+    var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel);
+    msg.attachments(attachmentsArray);
+    session.send(msg);
+}
+
+function checkMaterialToVacuum(session, vacuumModel, material) {
+    //wird alles zu lowerCase gemacht und leerzeichen und bashes gesäubert von Ctl- 26 wir -> ctl26
+    var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
+    builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
+        if (entities[0] && entities[0].type === 'VacuumModel') {
+            for (i in dusts.dustmatches) {
+                if (dusts.dustmatches[i].dust === material) {
+                    //Falls Staubklasse L kann jeder Staubsauger es Saugen direkt raus aus for schleife
+                    if (dusts.dustmatches[i].dustclass === 'L') {
+                        session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                    } else {
+                        for (j in models.vacuumTypes) {
+                            //falls model gefunden wird dann geprüft welche klasse es hat
+                            if ((models.vacuumTypes[j].model.replace(/-|\s/g, "").toLocaleLowerCase()).includes(cleanedVaccumModel)) {
+                                //wenn staub M und model klasse H ist alles kein problem
+                                if (dusts.dustmatches[i].dustclass === 'M' && (models.vacuumTypes[j].model).substring(0, 3).includes('H')) {
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    return;
+                                }
+                                //wenn staubklasse und modelklasse gleich dann auch alles easy
+                                else if ((models.vacuumTypes[j].model).substring(0, 3).includes(dusts.dustmatches[i].dustclass)) {
+                                    session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
+                                    return;
+                                }
+                                else {
+                                    //falls nicht gehts nicht
+                                    session.send('Leider kann dieser Absaugmobil nicht ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Wenn du wissen willst welcher Absaugmobile was saugen können, frag mich einfach :)');
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            //falls alles nichts hilft wird der Client wohl eine neue frage stellen müssen
+            session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
+        }
+    })
+}
+
+function materialSubmitAction(session, value) {
+    session.conversationData.material = findMostSensitive(session, value);
+    session.endDialog();
+    session.beginDialog('BusinessForm');
+}
+
+function findMostSensitive(session, value) {
+    var mset = false;
+    var currentdust;
+    console.log(session.message);
+    for(i in session.message.value.materials){
+        dustclass = dusts.dustmatches[i].dustclass;
+        if(dustclass === "H"){
+            material = dusts.dustmatches[i].dust;
+            return material;
+        }else if(dustclass === "M"){
+            currentdust = dusts.dustmatches[i];
+            mset = true;
+            break;
+        }else if(mset == false){
+            currentdust = dusts.dustmatches[i];
+        }
+    }
+    return currentdust.dust;
+}

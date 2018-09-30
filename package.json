@@ -4,11 +4,15 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "adaptivecards": "^1.0.0",
     "botbuilder": "^3.14.1",
     "botbuilder-azure": "^3.0.4",
     "botbuilder-cognitiveservices": "^1.2.0",
     "dotenv-extended": "^2.3.0",
+    "needle": "^2.2.4",
+    "node-fetch": "^2.2.0",
     "nodemailer": "^4.6.8",
+    "request-promise": "^4.2.2",
     "restify": "^5.0.0"
   },
   "devDependencies": {

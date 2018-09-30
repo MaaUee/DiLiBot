@@ -56,8 +56,8 @@ var qnarecognizer = new cognitiveservices.QnAMakerRecognizer({
 });
 
 // Make sure you add code to validate these fields
-var luisAppId = process.env.LuisAppId;
-var luisAPIKey = process.env.LuisAPIKey;
+var luisAppId = '87dcb46e-14e5-438a-be34-a9e321a1cd0b';
+var luisAPIKey = 'fe6e32de84f74dfca2cb86892b47f945';
 var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.microsoft.com';
 
 
@@ -343,7 +343,8 @@ function materialSubmitAction(session, value) {
 function findMostSensitive(session, value) {
     var mset = false;
     var currentdust;
-    for(i in session.message.materials){
+    console.log(session.message);
+    for(i in session.message.value.materials){
         dustclass = dusts.dustmatches[i].dustclass;
         if(dustclass === "H"){
             material = dusts.dustmatches[i].dust;
@@ -352,7 +353,7 @@ function findMostSensitive(session, value) {
             currentdust = dusts.dustmatches[i];
             mset = true;
             break;
-        }else if(!mset){
+        }else if(mset == false){
             currentdust = dusts.dustmatches[i];
         }
     }
@@ -363,6 +364,7 @@ bot.dialog('findMaterial',[
     (session, results, next) => {
         if (session.message && session.message.value) {
             materialSubmitAction(session, session.message.value);
+            console.log(session.message.value);
             return;
         }
         else {
@@ -379,14 +381,14 @@ bot.dialog('findMaterial',[
             }
             choices.push(choice);
         }
-
+   
         askmaterials = {
             "contentType": "application/vnd.microsoft.card.adaptive",
             "content": {
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                 "type": "AdaptiveCard",
                 "version": "1.0",
-                "body": {
+                "body": [{
                     "type": "Container",
                     "items": [
                         {
@@ -402,7 +404,7 @@ bot.dialog('findMaterial',[
                             "choices":choices  
                         }
                     ] 
-                },
+                }],
                 "actions": [
                     {
                         "type": "Action.Submit",
@@ -410,7 +412,13 @@ bot.dialog('findMaterial',[
                     }
                 ] 
             }
-        }
+
+        }      
+        console.log(askmaterials);      
+        var msg = new builder.Message(session)
+            .addAttachment(askmaterials);
+        session.send(msg);
+        next();
     },(session, results) => {
         console.log(JSON.stringify(results))
     }

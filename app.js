@@ -11,14 +11,9 @@ var dusts = require('./dusts.json');
 var models = require('./models.json');
 var request = require('request');
 var cards = require('./adaptiveCards.json');
-<<<<<<< HEAD
 const utils = require('./utils.js');
 const customVisionService = require('./customVisionService.js');
 
-=======
-require('dotenv-extended').load();
-require('adaptivecards');
->>>>>>> 6f541e12aa439b390837b3086b5294acc8bd3142
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -126,7 +121,7 @@ async function connectApi(){
 }
 */
 
-//bot.dialog('/', intents);
+bot.dialog('/', intents);
 
 bot.on('conversationUpdate', (session, activity, message) => {
     if (session.membersAdded) {
@@ -209,7 +204,6 @@ bot.dialog('SearchForVacuum', [
     matches: 'SearchForVacuum'
 })
 
-<<<<<<< HEAD
 function processSubmitAction(session, value) {
     var defaultErrorMessage = 'Bitte wähle';
     if(value.mobility){
@@ -232,7 +226,7 @@ function processSubmitAction(session, value) {
 }
 
 // default dialog
-bot.dialog('/', function(session) {
+/*bot.dialog('/', function(session) {
     if(utils.hasImageAttachment(session)){
         var stream = utils.getImageStreamFromMessage(session.message); 
         customVisionService.predict(stream)
@@ -261,10 +255,8 @@ bot.dialog('/', function(session) {
     } else {
         session.send('I did not receive any image');
     }
-});
+}); */
 
-=======
->>>>>>> 6f541e12aa439b390837b3086b5294acc8bd3142
 bot.dialog('Mobility',[
     (session, next) => {
         if(session.message.value.mobility){
@@ -371,10 +363,35 @@ bot.dialog('MaterialToVacuum', [
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast: ');
+            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast oder sende mit ein Bild.');
         }
 
     }, (session, results, next) => {
+        /*if(utils.hasImageAttachment(session)){
+            var stream = utils.getImageStreamFromMessage(session.message); 
+            customVisionService.predict(stream)
+                .then(function (response) {
+                    // Convert buffer into string then parse the JSON string to object
+                    var jsonObj = JSON.parse(response.toString('utf8'));
+                    console.log(jsonObj);
+                    var topPrediction = jsonObj.predictions;
+                    topPrediction.find(function(element) {
+                        if(element.probability >= 0.50){
+                            session.send('Hey, I think this image is a' + element.tagName + ' !');
+                        } else {
+                            session.send('Sorry! I don\'t know what that is :(');
+                        }
+                      });
+                }).catch(function (error) {
+                    console.log(error);
+                    session.send('Oops, there\'s something wrong with processing the image. Please try again.');
+                });
+    
+        } else {
+            session.send('I did not receive any image');
+        }*/
+        //TODO unterscheiden von prompt oder nicht prompt daten
+        //TODO unterscheiden von prompt oder nicht prompt daten
         //TODO unterscheiden von prompt oder nicht prompt daten
         var vacuumModel = results.response.vaccumModel || results.response;
         var material = results.response.material || session.conversationData.material;

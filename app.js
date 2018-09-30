@@ -13,6 +13,8 @@ var request = require('request');
 require('dotenv-extended').load();
 var AdaptiveCards = require("adaptivecards");
 var cards = require('./adaptiveCards.json');
+const utils = require('./utils.js');
+const customVisionService = require('./customVisionService.js');
 
 
 // Setup Restify Server
@@ -121,7 +123,7 @@ async function connectApi(){
 }
 */
 
-bot.dialog('/', intents);
+//bot.dialog('/', intents);
 
 bot.on('conversationUpdate', (session, activity, message) => {
     if (session.membersAdded) {
@@ -199,6 +201,38 @@ function processSubmitAction(session, value) {
     }
     
 }
+
+// default dialog
+bot.dialog('/', function(session) {
+    if(utils.hasImageAttachment(session)){
+        var stream = utils.getImageStreamFromMessage(session.message); 
+        customVisionService.predict(stream)
+            .then(function (response) {
+                // Convert buffer into string then parse the JSON string to object
+                var jsonObj = JSON.parse(response.toString('utf8'));
+                console.log(jsonObj);
+                var topPrediction = jsonObj.predictions;
+                topPrediction.find(function(element) {
+                    if(element.probability >= 0.50){
+                        session.send('Hey, I think this image is a' + element.tagName + ' !');
+                    }
+                  });
+
+                // make sure we only get confidence level with 0.80 and above. But you can adjust this depending on your need
+                if (topPrediction.Probability >= 0.50) {
+                    session.send(`Hey, I think this image is a ${topPrediction.Tag}!`);
+                } else {
+                    session.send('Sorry! I don\'t know what that is :(');
+                }
+            }).catch(function (error) {
+                console.log(error);
+                session.send('Oops, there\'s something wrong with processing the image. Please try again.');
+            });
+
+    } else {
+        session.send('I did not receive any image');
+    }
+});
 
 bot.dialog('Mobility',[
     (session) => {

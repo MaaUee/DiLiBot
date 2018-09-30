@@ -61,7 +61,7 @@ var luisAPIKey = 'fe6e32de84f74dfca2cb86892b47f945';
 var luisAPIHostName = process.env.LuisAPIHostName || 'westeurope.api.cognitive.microsoft.com';
 
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + '87dcb46e-14e5-438a-be34-a9e321a1cd0b' + '?subscription-key=' + 'fe6e32de84f74dfca2cb86892b47f945';
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 bot.recognizer(recognizer);
@@ -215,6 +215,7 @@ bot.dialog('SearchForVacuum', [
 })
 
 function processSubmitAction(session, value) {
+    session.send('KOMM SCHON!!!asddasj');
     var defaultErrorMessage = 'Bitte wähle';
     if(value.mobility){
         session.endDialog();
@@ -231,41 +232,13 @@ function processSubmitAction(session, value) {
         session.beginDialog('None', value);
     } else if (value.help === 'yes') {
         session.beginDialog('EndConversation', value);
+    } else if (value.picture === "true") {
+        //HIER BITTE
+        session.send('KOMM SCHON!!!');
+        session.beginDialog('sendImage', value);
     }
     
 }
-
-// default dialog
-/*bot.dialog('/', function(session) {
-    if(utils.hasImageAttachment(session)){
-        var stream = utils.getImageStreamFromMessage(session.message); 
-        customVisionService.predict(stream)
-            .then(function (response) {
-                // Convert buffer into string then parse the JSON string to object
-                var jsonObj = JSON.parse(response.toString('utf8'));
-                console.log(jsonObj);
-                var topPrediction = jsonObj.predictions;
-                topPrediction.find(function(element) {
-                    if(element.probability >= 0.50){
-                        session.send('Hey, I think this image is a' + element.tagName + ' !');
-                    }
-                  });
-
-                // make sure we only get confidence level with 0.80 and above. But you can adjust this depending on your need
-                if (topPrediction.Probability >= 0.50) {
-                    session.send(`Hey, I think this image is a ${topPrediction.Tag}!`);
-                } else {
-                    session.send('Sorry! I don\'t know what that is :(');
-                }
-            }).catch(function (error) {
-                console.log(error);
-                session.send('Oops, there\'s something wrong with processing the image. Please try again.');
-            });
-
-    } else {
-        session.send('I did not receive any image');
-    }
-}); */
 
 bot.dialog('Mobility',[
     (session, next) => {
@@ -463,32 +436,13 @@ bot.dialog('askForMobility',[
     },
 
 ])
-
-bot.dialog('MaterialToVacuum', [
-    (session, args, next) => {
-        if (session.message && session.message.value && session.message.value.help) {
-            processSubmitAction(session, session.message.value);
-            return;
-        }
-
-        var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
-
-        if (vaccumModel && material) {
-            next({
-                response: {
-                    vaccumModel: vaccumModel.entity,
-                    material: material.entity
-                }
-            });
-        }
-        else if (material && !vaccumModel) {
-            // no entities detected, ask user for a model
-            session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast oder sende mit ein Bild.');
-        }
-
-    }, (session, results, next) => {
+// HIER BITTE
+bot.dialog('SendImage',[
+    function (session) { 
+        session.send('HALLOOOOOO');
+        builder.Prompts.attachment(session,'Lad ein Bild von deinem Absaugmobils.');
+    },
+    (session, __, next) => {
         if(utils.hasImageAttachment(session)){
             var stream = utils.getImageStreamFromMessage(session.message); 
             customVisionService.predict(stream)
@@ -512,6 +466,40 @@ bot.dialog('MaterialToVacuum', [
         } else {
             session.send('I did not receive any image');
         }
+    },
+
+])
+
+bot.dialog('MaterialToVacuum', [
+    (session, args, next) => {
+        if (session.message && session.message.value && (session.message.value.picture || session.message.value.help)) {
+            processSubmitAction(session, session.message.value);
+            return;
+        }
+
+        var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
+        var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
+
+        if (vaccumModel && material) {
+            next({
+                response: {
+                    vaccumModel: vaccumModel.entity,
+                    material: material.entity
+                }
+            });
+        }
+        else if (material && !vaccumModel) {
+            // no entities detected, ask user for a model
+            session.conversationData.material = material.entity;
+            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast.');
+            choicebox = cards.imageConversation;
+            // HIER BITTE
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        }
+
+    }, (session, results, next) => {
         var vacuumModel = results.response.vaccumModel || results.response;
         var material = results.response.material || session.conversationData.material;
         if (vacuumModel) {

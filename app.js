@@ -677,7 +677,7 @@ function findVacuumToMaterial(session, material, volume, ac) {
     for (i in dusts.dustmatches) {
         materialToUse = material.entity || material;
         if (dusts.dustmatches[i].dust.toLowerCase() === materialToUse.toLowerCase() ) {
-            session.send("Alle Sauger mit Klasse %s und höher können %s saugen. \n Folgende Produkte kann ich Ihnen empfehlen:", dusts.dustmatches[i].dustclass, dusts.dustmatches[i].dust);
+            session.send("Folgende Produkte kann ich Ihnen empfehlen:");
             var attachmentsArray = [];
             for (j in models.vacuumTypes) {
                 var ctx = (models.vacuumTypes[j].model).substring(0, 3);

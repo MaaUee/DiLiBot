@@ -1,6 +1,6 @@
 {
     "dustmatches":[
-    { "dust":"holz", "dustclass":"M"},
+    { "dust":"Holz", "dustclass":"M"},
     { "dust":"Hartholz", "dustclass":"M"},
     { "dust":"Buche", "dustclass":"M"},
     { "dust":"Eiche", "dustclass":"M"},

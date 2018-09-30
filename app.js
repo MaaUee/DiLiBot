@@ -455,10 +455,11 @@ bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
         
         //Checkt ob Adaptive card geklickt wurde und ruft processSubmitAction() auf //Für Optionales Showcase Scenario
-        /*if (session.message && session.message.value) {
-            ImageSubmitAction(session, session.message.value);
+        if (session.message && session.message.value && session.message.value.help) {
+            //ImageSubmitAction(session, session.message.value);
+            processSubmitAction(session, session.message.value);
             return;
-        }*/
+        }
 
         //prüft ob Entities im Satz sind
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
@@ -466,6 +467,7 @@ bot.dialog('MaterialToVacuum', [
 
         //falls beides erkannt ist wird gleich mit der Antwort im STEP 2 weitergemacht
         if (vaccumModel && material) {
+            session.send(material, vaccumModel);
             next({
                 response: {
                     vaccumModel: vaccumModel.entity,
@@ -476,6 +478,7 @@ bot.dialog('MaterialToVacuum', [
         //falls nur material erkannt wurde gehen fragen wir nochmal nach MODEL und gehen in STEP 2
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a model
+            session.send(material);
             session.conversationData.material = material.entity;
             //choicebox = cards.imageConversation;
             builder.Prompts.text(session, 'Ich konnte das Modell deines Absaugmobils nicht verstehen. \n Bitte sag mir, was für ein Absaugmobil du hast.');
@@ -492,6 +495,7 @@ bot.dialog('MaterialToVacuum', [
         //gleiche wie oben
         var material = results.response.material || session.conversationData.material;
         if (vacuumModel) {
+            session.send(vacuumModel + ' ' +  material + 'Step2');
             //falls erkannt gehen wir hier rein und checken ob der sauger das kann und senden zum nächsten Step
             checkMaterialToVacuum(session, vacuumModel, material);
             next();
@@ -590,7 +594,8 @@ bot.dialog('None', [
 
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
-                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702480424010.')
+                session.send('Sorry something went wrong I could send the mail. Please contact the support 0702480424010.');
+                session.send('Falls du noch Fragen hast kannst du mich ruhig fragen :)')
             } else {
                 session.send('Danke das du mir deine eMail gegeben hast. Ich habe die Servicemitarbeiter benachrichtigt um deine Frage so schnell es geht zu beantworten.');
                 session.send('Falls du noch Fragen hast kannst du mich ruhig fragen :)');
@@ -738,8 +743,10 @@ function checkMaterialToVacuum(session, vacuumModel, material) {
     var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
     builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
         if (entities[0] && entities[0].type === 'VacuumModel') {
+            session.send('IN DER IF!!');
             for (i in dusts.dustmatches) {
-                if (dusts.dustmatches[i].dust === material) {
+                if (dusts.dustmatches[i].dust.toLocaleLowerCase() === material.toLocaleLowerCase()) {
+                    session.send(material);
                     //Falls Staubklasse L kann jeder Staubsauger es Saugen direkt raus aus for schleife
                     if (dusts.dustmatches[i].dustclass === 'L') {
                         session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');

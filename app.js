@@ -225,7 +225,6 @@ bot.dialog('BusinessForm',[
         session.send(msg);
         next();
     },(session, results) => {
-        console.log(JSON.stringify(results))
     }
 ])
 
@@ -242,7 +241,6 @@ bot.dialog('Business', [
             if(session.conversationData.material){
                 var materials = findMaterial(session);
                 if(materials.length > 0){
-                    console.log(materials);
                     session.conversationData.materials = materials;
                     session.endDialog();
                     session.beginDialog('findMaterial');
@@ -268,7 +266,6 @@ bot.dialog('findMaterial',[
     (session, results, next) => {
         if (session.message && session.message.value) {
             materialSubmitAction(session, session.message.value);
-            console.log(session.message.value);
             return;
         }
         else {
@@ -317,14 +314,13 @@ bot.dialog('findMaterial',[
                 ] 
             }
 
-        }      
-        console.log(askmaterials);      
+        }          
         var msg = new builder.Message(session)
             .addAttachment(askmaterials);
         session.send(msg);
         next();
     },(session, results) => {
-        console.log(JSON.stringify(results))
+
     }
 
 ])
@@ -793,7 +789,6 @@ function materialSubmitAction(session, value) {
 function findMostSensitive(session, value) {
     var mset = false;
     var currentdust;
-    console.log(session.message);
     for(i in session.message.value.materials){
         dustclass = dusts.dustmatches[i].dustclass;
         if(dustclass === "H"){

@@ -200,6 +200,12 @@
                     "items": [
                         {
                             "type": "TextBlock",
+                            "text": "Ich konnte das Modell deines Absaugmobils nicht verstehen. \n Bitte sag mir, was für ein Absaugmobil du hast.",
+                            "weight": "bolder",
+                            "size": "medium"
+                        },
+                        {
+                            "type": "TextBlock",
                             "text": "Klick hier wenn du ein Bild schicken willst.",
                             "weight": "bolder",
                             "size": "medium"

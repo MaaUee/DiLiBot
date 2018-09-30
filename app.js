@@ -168,6 +168,7 @@ bot.dialog('findBusinessVacuum',[
         if(material) {
             showVacuums(findVacuumToMaterial(session, material, volume, ac),session);
             session.endDialog();
+            session.endConversation();
         } else {
             next();
         }
@@ -191,7 +192,7 @@ bot.dialog('SearchForVacuum', [
             processSubmitAction(session, session.message.value);
             return;
         }
-        var material = builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
+        var material = session.conversationData.material || builder.EntityRecognizer.findEntity(args.intent.entities,'Material');
         if(material) {
             session.conversationData.material = material;
             session.endDialog();
@@ -206,21 +207,25 @@ bot.dialog('SearchForVacuum', [
             .addAttachment(choicebox);
         session.send(msg);
         next();
-    },    
+    },
     (session) => {
-
     }
+
 ]).triggerAction({
     matches: 'SearchForVacuum'
 })
 
+/* optional Show case */
+function ImageSubmitAction(session, value){
+    session.endDialog();
+    session.beginDialog('sendImage', value);
+}
+
 function processSubmitAction(session, value) {
-    session.send('KOMM SCHON!!!asddasj');
     var defaultErrorMessage = 'Bitte wähle';
     if(value.mobility){
         session.endDialog();
         session.beginDialog('Mobility', value);
-        
     }
     else if(value.usecase === 'business'){
         session.endDialog();
@@ -232,11 +237,7 @@ function processSubmitAction(session, value) {
         session.beginDialog('None', value);
     } else if (value.help === 'yes') {
         session.beginDialog('EndConversation', value);
-    } else if (value.picture === "true") {
-        //HIER BITTE
-        session.send('KOMM SCHON!!!');
-        session.beginDialog('sendImage', value);
-    }
+    } 
     
 }
 
@@ -278,6 +279,7 @@ bot.dialog('Business', [
                 if(materials.length > 0){
                     console.log(materials);
                     session.conversationData.materials = materials;
+                    session.endDialog();
                     session.beginDialog('findMaterial');
                 }else{
                     session.endDialog();
@@ -305,32 +307,6 @@ function findMaterial(session){
         }
     }
     return materials;
-}
-
-function materialSubmitAction(session, value) {
-    session.conversationData.material = findMostSensitive(session, value);
-    session.endDialog();
-    session.beginDialog('BusinessForm');
-}
-
-function findMostSensitive(session, value) {
-    var mset = false;
-    var currentdust;
-    console.log(session.message);
-    for(i in session.message.value.materials){
-        dustclass = dusts.dustmatches[i].dustclass;
-        if(dustclass === "H"){
-            material = dusts.dustmatches[i].dust;
-            return material;
-        }else if(dustclass === "M"){
-            currentdust = dusts.dustmatches[i];
-            mset = true;
-            break;
-        }else if(mset == false){
-            currentdust = dusts.dustmatches[i];
-        }
-    }
-    return currentdust.dust;
 }
 
 bot.dialog('findMaterial',[
@@ -400,7 +376,7 @@ bot.dialog('findMaterial',[
 
 bot.dialog('BusinessForm',[
     function (session, args, next) {
-        if (session.message && session.message.value) {
+        if (session.message && session.message.value && session.message.value.volume) {
             formSubmitAction(session, session.message.value);
             return;
         }
@@ -436,7 +412,8 @@ bot.dialog('askForMobility',[
     },
 
 ])
-// HIER BITTE
+
+/*optional showcase scenario
 bot.dialog('SendImage',[
     function (session) { 
         session.send('HALLOOOOOO');
@@ -468,14 +445,15 @@ bot.dialog('SendImage',[
         }
     },
 
-])
+])*/
 
 bot.dialog('MaterialToVacuum', [
     (session, args, next) => {
-        if (session.message && session.message.value && (session.message.value.picture || session.message.value.help)) {
-            processSubmitAction(session, session.message.value);
+        //for optional showcase image scenarion
+        /*if (session.message && session.message.value) {
+            ImageSubmitAction(session, session.message.value);
             return;
-        }
+        }*/
 
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
         var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
@@ -491,12 +469,11 @@ bot.dialog('MaterialToVacuum', [
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
-            builder.Prompts.text(session, 'Ich konnte das Model deines Absaugmobils nicht verstehen. Bitte sag mir was für ein Absaugmobil du hast.');
-            choicebox = cards.imageConversation;
-            // HIER BITTE
-        var msg = new builder.Message(session)
-            .addAttachment(choicebox);
-        session.send(msg);
+            //choicebox = cards.imageConversation;
+            builder.Prompts.text(session, 'Ich konnte das Modell deines Absaugmobils nicht verstehen. \n Bitte sag mir, was für ein Absaugmobil du hast.');
+        /* var msg = new builder.Message(session)
+                .addAttachment(choicebox);
+            session.send(msg);*/
         }
 
     }, (session, results, next) => {
@@ -674,18 +651,20 @@ function findVacuumToMaterial(session, material, volume, ac) {
                 } else if (dusts.dustmatches[i].dustclass === "H") {
                     condition = ctx.includes(dusts.dustmatches[i].dustclass);
                 }
-                if(volume){
-                    condition =+ (models.vacuumTypes[j].model).includes(volume);
-                }
-                if(ac){
-                    condition =+ (models.vacuumTypes[j].model).includes("AC");
-                }
                 if(condition){
-                    obj = buildHeroCard(j, session);
-                    attachmentsArray.push(obj);
+                    var obj = false;
+                    if(volume && ac){
+                        if((models.vacuumTypes[j].model).includes(volume) && (models.vacuumTypes[j].model).includes("AC")){
+                            obj = buildHeroCard(j, session);
+                        }
+                    }else{
+                        obj = buildHeroCard(j, session);
+                    }
+                    if(obj){
+                        attachmentsArray.push(obj);
+                    }
                 }
             }
-
         }
     }
     return attachmentsArray;
@@ -743,4 +722,30 @@ function checkMaterialToVacuum(session, vacuumModel, material) {
             session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
         }
     })
+}
+
+function materialSubmitAction(session, value) {
+    session.conversationData.material = findMostSensitive(session, value);
+    session.endDialog();
+    session.beginDialog('BusinessForm');
+}
+
+function findMostSensitive(session, value) {
+    var mset = false;
+    var currentdust;
+    console.log(session.message);
+    for(i in session.message.value.materials){
+        dustclass = dusts.dustmatches[i].dustclass;
+        if(dustclass === "H"){
+            material = dusts.dustmatches[i].dust;
+            return material;
+        }else if(dustclass === "M"){
+            currentdust = dusts.dustmatches[i];
+            mset = true;
+            break;
+        }else if(mset == false){
+            currentdust = dusts.dustmatches[i];
+        }
+    }
+    return currentdust.dust;
 }

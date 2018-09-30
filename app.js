@@ -69,6 +69,8 @@ bot.recognizer(recognizer);
 // Add a dialog for each intent that the LUIS app recognizes.
 var intents = new builder.IntentDialog({ recognizers: [qnarecognizer] });
 
+//API call um TOKEN zu bekommen
+//wird nicht verwendet weil wir die API nicht nach Produkte anfrage
 function getToken() {
     return new Promise((resolve) => {
         var tokenOptions = {
@@ -87,7 +89,8 @@ function getToken() {
         })
     })
 }
-
+//API call für Produkte
+//wird nicht verwendet weil JSON sehr unpraktisch ist
 function getProduct(token, id) {
     return new Promise((resolve) => {
         var headers = {
@@ -121,6 +124,7 @@ async function connectApi(){
 }
 */
 
+//Standart Dialog checkt alle Intents durch und sucht sich das richtige aus
 bot.dialog('/', intents);
 
 bot.on('conversationUpdate', (session, activity, message) => {
@@ -234,6 +238,7 @@ function processSubmitAction(session, value) {
         session.endDialog();
         session.beginDialog('askForMobility', value);
     } else if (value.help === 'no') {
+        //Falls wir keine Hilfe waren wird das NONE dialog geöffnet und dem Kunden erlaubt eine mail zu schreiben
         session.beginDialog('None', value);
     } else if (value.help === 'yes') {
         session.beginDialog('EndConversation', value);
@@ -260,6 +265,7 @@ bot.dialog('Mobility',[
     }
 ])
 
+//Dialog um Konversation abzuschließen
 bot.dialog('EndConversation', [
     (session) => {
         session.send('Cool das freut mich! Danke dir.');
@@ -412,8 +418,8 @@ bot.dialog('askForMobility',[
     },
 
 ])
-
 /*optional showcase scenario
+// Dieser Dialog erkennt Bilder und gibt den namen als Text raus
 bot.dialog('SendImage',[
     function (session) { 
         session.send('HALLOOOOOO');
@@ -427,9 +433,12 @@ bot.dialog('SendImage',[
                     // Convert buffer into string then parse the JSON string to object
                     var jsonObj = JSON.parse(response.toString('utf8'));
                     console.log(jsonObj);
+                    //Array mit predictions
                     var topPrediction = jsonObj.predictions;
                     topPrediction.find(function(element) {
+                        //wir holen uns die Prediction mit 0.50 oder höher
                         if(element.probability >= 0.50){
+                            // element.tagName ist der Tag was Vision erkennt
                             session.send('Hey, I think this image is a' + element.tagName + ' !');
                         } else {
                             session.send('Sorry! I don\'t know what that is :(');
@@ -441,6 +450,7 @@ bot.dialog('SendImage',[
                 });
     
         } else {
+            //Falls er kein Bild bekommt
             session.send('I did not receive any image');
         }
     },
@@ -448,16 +458,20 @@ bot.dialog('SendImage',[
 ])*/
 
 bot.dialog('MaterialToVacuum', [
+    //STEP 1
     (session, args, next) => {
-        //for optional showcase image scenarion
+        
+        //Checkt ob Adaptive card geklickt wurde und ruft processSubmitAction() auf //Für Optionales Showcase Scenario
         /*if (session.message && session.message.value) {
             ImageSubmitAction(session, session.message.value);
             return;
         }*/
 
+        //prüft ob Entities im Satz sind
         var vaccumModel = builder.EntityRecognizer.findEntity(args.intent.entities, 'VacuumModel');
         var material = builder.EntityRecognizer.findEntity(args.intent.entities, 'Material');
 
+        //falls beides erkannt ist wird gleich mit der Antwort im STEP 2 weitergemacht
         if (vaccumModel && material) {
             next({
                 response: {
@@ -466,6 +480,7 @@ bot.dialog('MaterialToVacuum', [
                 }
             });
         }
+        //falls nur material erkannt wurde gehen fragen wir nochmal nach MODEL und gehen in STEP 2
         else if (material && !vaccumModel) {
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
@@ -476,17 +491,24 @@ bot.dialog('MaterialToVacuum', [
             session.send(msg);*/
         }
 
-    }, (session, results, next) => {
+    },
+    //STEP 2 
+    (session, results, next) => {
+        //results.response.vaccumModel ist wenn beides am anfang erkannt wurde wenn nicht steht Prompt in results.response
         var vacuumModel = results.response.vaccumModel || results.response;
+        //gleiche wie oben
         var material = results.response.material || session.conversationData.material;
         if (vacuumModel) {
+            //falls erkannt gehen wir hier rein und checken ob der sauger das kann und senden zum nächsten Step
             checkMaterialToVacuum(session, vacuumModel, material);
             next();
         }else {
             session.send("Tut mir leid, Ich konnte das Model deines Absaugmobils nicht verstehen. bitte stelle eine neue Anfrage");
         }
     },
+    //STEP 3
     (session) => {
+        //hier wird die CARD gepusht um zu checken ob der Kunde zurfrieden war <endConversation> im File adaptiveCards.json
         choicebox = cards.endConversation;
         var msg = new builder.Message(session)
             .addAttachment(choicebox);
@@ -549,6 +571,7 @@ bot.dialog('AccessoryToVacuum',[
 })
 
 bot.dialog('None', [
+    //Hier sollten wir versuchen noch Ein Text einzubinden ist aber nicht wirklich notwendig. Jetzt wird nur die Email weitergegeben
     (session) => {
         session.conversationData.question = session.message.text;
         builder.Prompts.text(session, 'Ich bin echt traurig das ich nicht hilfreich sein kann. Wenn du willst schreib ich für dich eine Mail an den Service. Gibt mir bitte deine e-Mail Adresse.');
@@ -691,25 +714,31 @@ function showVacuums(attachmentsArray = [], session){
 }
 
 function checkMaterialToVacuum(session, vacuumModel, material) {
+    //wird alles zu lowerCase gemacht und leerzeichen und bashes gesäubert von Ctl- 26 wir -> ctl26
     var cleanedVaccumModel = vacuumModel.toLocaleLowerCase().replace(/-|\s/g, "");
     builder.LuisRecognizer.recognize(vacuumModel, LuisModelUrl, function (err, intents, entities) {
         if (entities[0] && entities[0].type === 'VacuumModel') {
             for (i in dusts.dustmatches) {
                 if (dusts.dustmatches[i].dust === material) {
+                    //Falls Staubklasse L kann jeder Staubsauger es Saugen direkt raus aus for schleife
                     if (dusts.dustmatches[i].dustclass === 'L') {
                         session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
                     } else {
                         for (j in models.vacuumTypes) {
+                            //falls model gefunden wird dann geprüft welche klasse es hat
                             if ((models.vacuumTypes[j].model.replace(/-|\s/g, "").toLocaleLowerCase()).includes(cleanedVaccumModel)) {
+                                //wenn staub M und model klasse H ist alles kein problem
                                 if (dusts.dustmatches[i].dustclass === 'M' && (models.vacuumTypes[j].model).substring(0, 3).includes('H')) {
                                     session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
                                     return;
                                 }
+                                //wenn staubklasse und modelklasse gleich dann auch alles easy
                                 else if ((models.vacuumTypes[j].model).substring(0, 3).includes(dusts.dustmatches[i].dustclass)) {
                                     session.send('Dieses Absaugmobil kann ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Viel spass damit!');
                                     return;
                                 }
                                 else {
+                                    //falls nicht gehts nicht
                                     session.send('Leider kann dieser Absaugmobil nicht ' + dusts.dustmatches[i].dust.toUpperCase() + ' saugen. Wenn du wissen willst welcher Absaugmobile was saugen können, frag mich einfach :)');
                                     return;
                                 }
@@ -719,6 +748,7 @@ function checkMaterialToVacuum(session, vacuumModel, material) {
                 }
             }
         } else {
+            //falls alles nichts hilft wird der Client wohl eine neue frage stellen müssen
             session.send('Ich konnte das Model deines Absaugmobils nicht verstehen. Stell mir einfach eine neue Frage, vielleicht verstehe ich dich dann :)');
         }
     })

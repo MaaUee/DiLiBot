@@ -136,14 +136,24 @@ bot.dialog('GreetingDialog',
     (session) => {
         session.send("Hallo, ich bin DiLiBot, Was kann ich für dich tun?");
         session.endDialog();
-    }).triggerAction({
-        matches: 'Greeting'
-    })
+    }
+).triggerAction({
+    matches: 'Greeting'
+})
 
 bot.dialog('HelpDialog',
     (session) => {
-        session.send('You reached the Help intent. You said \'%s\'.', session.message.text);
+        session.send('Hallo, ich bin DiLiBot, ich kann dich auf der Suche nach einem Absaugmobil beraten, oder dir Fragen zu deinem Modell beantworten', session.message.text);
         session.endDialog();
+    } ,(session, __, next) => {
+        choicebox = cards.privateBusiness;
+        var msg = new builder.Message(session)
+            .addAttachment(choicebox);
+        session.send(msg);
+        next();
+    },    
+    (session) => {
+
     }
 ).triggerAction({
     matches: 'Help'
@@ -237,8 +247,15 @@ bot.dialog('Business', [
     (session, results, next) => {
             session.conversationData.material = results.response;
             if(session.conversationData.material){
-                session.endDialog();
-                session.beginDialog('BusinessForm');
+                var materials = findMaterial(session);
+                if(materials.length > 0){
+                    console.log(materials);
+                    session.conversationData.materials = materials;
+                    session.beginDialog('findMaterial');
+                }else{
+                    session.endDialog();
+                    session.beginDialog('Business');
+                }
             }else{
                 session.endDialog();
                 session.beginDialog('Business');
@@ -247,6 +264,103 @@ bot.dialog('Business', [
     (session) => {
         session.endDialog();
     }
+])
+
+function findMaterial(session){
+    var materials = [];
+    var dust;
+    material = session.conversationData.material.toLowerCase();
+    material = material.replace(/\,/g," ");
+    for(i in dusts.dustmatches){
+        dust = dusts.dustmatches[i].dust.toLowerCase();
+        if(dust.includes(material) || material.includes(dust)){
+            materials.push(dusts.dustmatches[i].dust);
+        }
+    }
+    return materials;
+}
+
+function materialSubmitAction(session, value) {
+    session.conversationData.material = findMostSensitive(session, value);
+    session.endDialog();
+    session.beginDialog('BusinessForm');
+}
+
+function findMostSensitive(session, value) {
+    var mset = false;
+    var currentdust;
+    for(i in session.message.materials){
+        dustclass = dusts.dustmatches[i].dustclass;
+        if(dustclass === "H"){
+            material = dusts.dustmatches[i].dust;
+            return material;
+        }else if(dustclass === "M"){
+            currentdust = dusts.dustmatches[i];
+            mset = true;
+            break;
+        }else if(!mset){
+            currentdust = dusts.dustmatches[i];
+        }
+    }
+    return currentdust.dust;
+}
+
+bot.dialog('findMaterial',[
+    (session, results, next) => {
+        if (session.message && session.message.value) {
+            materialSubmitAction(session, session.message.value);
+            return;
+        }
+        else {
+           next();
+        }
+    },
+    (session, __, next) => {
+        var choices = [];
+        for(i in session.conversationData.materials){
+            choice = {
+                "type":"Input.Choice",
+                "title":session.conversationData.materials[i],
+                "value":session.conversationData.materials[i]
+            }
+            choices.push(choice);
+        }
+
+        askmaterials = {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Bitte wähle aus, welche dieser Stäube du saugen möchtest",
+                            "weight": "bolder",
+                            "size": "medium"
+                        },
+                        {
+                            "type":"Input.ChoiceSet",
+                            "id":"materials",
+                            "isMultiSelect":"true",
+                            "choices":choices  
+                        }
+                    ] 
+                },
+                "actions": [
+                    {
+                        "type": "Action.Submit",
+                        "title": "Submit"
+                    }
+                ] 
+            }
+        }
+    },(session, results) => {
+        console.log(JSON.stringify(results))
+    }
+
 ])
 
 bot.dialog('BusinessForm',[

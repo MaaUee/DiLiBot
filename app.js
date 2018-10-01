@@ -479,7 +479,7 @@ bot.dialog('MaterialToVacuum', [
             // no entities detected, ask user for a model
             session.conversationData.material = material.entity;
             //choicebox = cards.imageConversation;
-            builder.Prompts.text(session, 'Ich konnte das Modell deines Absaugmobils nicht verstehen. \n Bitte sag mir, welches Absaugmobil du hast.');
+            builder.Prompts.text(session, 'Ich konnte das Modell deines Absaugmobils nicht identifizieren. \n Bitte sag mir, welches Absaugmobil du hast.');
             /* var msg = new builder.Message(session)
                     .addAttachment(choicebox);
                 session.send(msg);*/

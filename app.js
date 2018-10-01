@@ -516,10 +516,14 @@ bot.dialog('MaterialToVacuum', [
 
 /*Wenn der benutzer nach Produktdetails fragt */
 bot.dialog('DetailsToVacuum', [
-    (session) => {
+    (session, next) => {
         url = {
             "contentType": "application/vnd.microsoft.card.adaptive",
             "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": {},
                 "actions": [
                     {
                         "type": "Action.OpenUrl",
@@ -532,9 +536,8 @@ bot.dialog('DetailsToVacuum', [
         var msg = new builder.Message(session)
             .addAttachment(url);
         session.send(msg);
-        next();
     }, (session, results) => {
-        session.send(JSON.stringify(results));
+        
     }
 ]).triggerAction({
     matches: 'DetailsToVacuum'
@@ -542,10 +545,14 @@ bot.dialog('DetailsToVacuum', [
 
 /*Wenn der Benutzer nach Verbrauchsmaterial oder Zubehör fragt */
 bot.dialog('AccessoryToVacuum', [
-    (session) => {
+    (session, next) => {
         url = {
             "contentType": "application/vnd.microsoft.card.adaptive",
             "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": {},
                 "actions": [
                     {
                         "type": "Action.OpenUrl",
@@ -558,9 +565,7 @@ bot.dialog('AccessoryToVacuum', [
         var msg = new builder.Message(session)
             .addAttachment(url);
         session.send(msg);
-        next();
     }, (session, results) => {
-        session.send(JSON.stringify(results));
     }
 ]).triggerAction({
     matches: 'AccessoryToVacuum'

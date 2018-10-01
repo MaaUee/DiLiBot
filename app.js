@@ -584,14 +584,14 @@ bot.dialog('None', [
         });
         var mailOptions = {
             from: 'delibot@mail.de',
-            to: 'delibot@mail.de',
+            to: 'ka026@hdm-stuttgart.de',
             subject: 'BotMail',
             text: 'Frage/Problem: ' + session.conversationData.question + 'eMail: ' + results.response
         };
 
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
-                session.send('Hoppla da ist etwas schief gelaufen. Bitte wende dich an den Support 0702480424010.');
+                session.send('Hoppla da ist etwas schief gelaufen. Bitte wende dich an den Support: 0702 / 480424010.');
                 session.send('Falls du noch Fragen hast, kannst du mich ruhig fragen :)')
             } else {
                 session.send('Danke, dass du mir deine E-Mail gegeben hast. Ich habe die Servicemitarbeiter benachrichtigt um deine Frage so schnell es geht zu beantworten.');
